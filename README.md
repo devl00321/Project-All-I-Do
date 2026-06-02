@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="web-app/src/assets/logo.jpg" alt="All-I-Do Logo" width="120" style="border-radius: 22%;" />
+  <img src="./web-app/src/assets/logo.jpg" alt="All-I-Do Logo" width="120" />
   
   # All-I-Do
 
