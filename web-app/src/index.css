@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Fraunces:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
 
 :root {
   --mint: #5DCAA5;
@@ -35,7 +35,8 @@ html {
 }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Lexend', sans-serif;
+  font-weight: 600;
   background: var(--bg);
   color: var(--ink);
   line-height: 1.6;
@@ -45,12 +46,9 @@ body {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--surface); }
 ::-webkit-scrollbar-thumb { background: var(--brdMid); border-radius: 3px; }
-input, textarea, button, select { font-family: 'DM Sans', sans-serif; }
+input, textarea, button, select { font-family: 'Lexend', sans-serif; font-weight: 600; }
 
-@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
-@keyframes fadeIn { from{opacity:0} to{opacity:1} }
-@keyframes slideIn { from{transform:translateX(-20px);opacity:0} to{transform:translateX(0);opacity:1} }
-@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.035)} }
+
 @keyframes bounce3 { 0%,80%,100%{transform:scale(0)} 40%{transform:scale(1)} }
 @keyframes ping { 0%{transform:scale(1);opacity:1} 100%{transform:scale(2.4);opacity:0} }
 @keyframes dashMove { to{stroke-dashoffset:-20} }
@@ -118,11 +116,11 @@ input, textarea, button, select { font-family: 'DM Sans', sans-serif; }
 .nav-link .icon { font-size: 18px; width: 24px; text-align: center; }
 
 .main-content { flex: 1; overflow-y: auto; height: 100vh; }
-.page { padding: 36px 40px; max-width: 1100px; animation: fadeUp .35s ease; }
+.page { padding: 36px 40px; max-width: 1100px; }
 
 .section-title {
-  font-family: 'Fraunces', serif;
-  font-size: 28px; font-weight: 700; color: var(--ink);
+  font-family: 'Lexend', sans-serif;
+  font-size: 28px; font-weight: 600; color: var(--ink);
   letter-spacing: -.3px; margin-bottom: 6px;
 }
 .section-sub { color: var(--inkLight); font-size:14px; margin-bottom:28px; }

@@ -1,8 +1,22 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { B } from '../constants';
 import { AllidoLogo } from './Common';
+import gsap from 'gsap';
 
 export function Sidebar({ tab, onTab, hasActive }) {
+  const sidebarRef = useRef(null);
+  
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline();
+      tl.from(".logo-area", { x: -20, opacity: 0, duration: 0.4, ease: "power2.out" })
+        .from(".location-pill", { x: -20, opacity: 0, duration: 0.3, ease: "power2.out" }, "-=0.2")
+        .from(".nav-link", { x: -15, opacity: 0, duration: 0.3, stagger: 0.05, ease: "power2.out" }, "-=0.1")
+        .from(".footer-area", { opacity: 0, duration: 0.3 }, "-=0.1");
+    }, sidebarRef);
+    return () => ctx.revert();
+  }, []);
+
   const links = [
     { id:"home",     icon:"🏠", label:"Home" },
     { id:"services", icon:"🔧", label:"Services" },
@@ -12,13 +26,13 @@ export function Sidebar({ tab, onTab, hasActive }) {
     { id:"profile",  icon:"👤", label:"Profile" },
   ];
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" ref={sidebarRef}>
       {/* Logo */}
-      <div style={{ padding:"24px 20px 16px", display:"flex", alignItems:"center", gap:12,
+      <div className="logo-area" style={{ padding:"24px 20px 16px", display:"flex", alignItems:"center", gap:12,
         borderBottom:`1.5px solid ${B.brd}` }}>
         <AllidoLogo size={38}/>
         <div>
-          <div style={{ fontFamily:"'Fraunces',serif", fontSize:22, fontWeight:700, color:B.ink, letterSpacing:-.5 }}>
+          <div style={{ fontFamily:"'Lexend',sans-serif", fontSize:22, fontWeight:600, color:B.ink, letterSpacing:-.5 }}>
             All<span style={{ color: B.mint }}>i</span>Do
           </div>
           <div style={{ color:B.muted, fontSize:11 }}>Customer Portal</div>
@@ -26,7 +40,7 @@ export function Sidebar({ tab, onTab, hasActive }) {
       </div>
 
       {/* Location pill */}
-      <div style={{ margin:"16px 12px 8px",
+      <div className="location-pill" style={{ margin:"16px 12px 8px",
         background:B.mintLight, borderRadius:12, padding:"9px 14px",
         display:"flex", alignItems:"center", gap:8, border:`1.5px solid ${B.brd}` }}>
         <span style={{ fontSize:16 }}>📍</span>
@@ -55,7 +69,7 @@ export function Sidebar({ tab, onTab, hasActive }) {
       </nav>
 
       {/* Footer */}
-      <div style={{ padding:"16px 20px", borderTop:`1.5px solid ${B.brd}`,
+      <div className="footer-area" style={{ padding:"16px 20px", borderTop:`1.5px solid ${B.brd}`,
         fontSize:11, color:B.muted, lineHeight:1.6 }}>
         ALLIDO v1.0<br/>Made with ❤️ in Birbhum
       </div>

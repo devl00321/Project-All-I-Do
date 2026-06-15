@@ -1,31 +1,51 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { B, STATS, STEPS, REVIEWS } from '../../constants';
 import { Badge, MockMap } from '../../components/Common';
+import gsap from 'gsap';
 
 export default function Home({ onBook, onTab, hasActive }) {
+  const homeRef = useRef(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline();
+      tl.from(".hero-badge", { opacity: 0, y: -10, duration: 0.4 })
+        .from(".hero-title", { opacity: 0, y: 40, duration: 0.6, ease: "power3.out" }, "-=0.2")
+        .from(".hero-sub", { opacity: 0, y: 20, duration: 0.4 }, "-=0.4")
+        .from(".hero-btns", { opacity: 0, y: 15, duration: 0.4 }, "-=0.2")
+        .from(".hero-map", { opacity: 0, scale: 0.92, duration: 0.5, ease: "back.out(1.2)" }, "-=0.4")
+        .from(".stat-card", { opacity: 0, y: 24, duration: 0.4, stagger: 0.08, ease: "power2.out" }, "-=0.2")
+        .from(".step-card", { opacity: 0, x: -24, duration: 0.4, stagger: 0.1, ease: "power2.out" }, "-=0.2")
+        .from(".review-card", { opacity: 0, y: 20, duration: 0.4, stagger: 0.09, ease: "power2.out" }, "-=0.2");
+    }, homeRef);
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <div className="page">
+    <div className="page" ref={homeRef}>
       {/* Hero */}
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:32, marginBottom:40,
         background:`linear-gradient(135deg, ${B.mintLight} 0%, #fff 100%)`,
         border:`1.5px solid ${B.brd}`, borderRadius:24, padding:"40px 44px", alignItems:"center" }}>
         <div>
-          <Badge color={B.mint}>🚀 Now live in Suri, Birbhum</Badge>
-          <div style={{ fontFamily:"'Fraunces',serif", fontSize:40, fontWeight:700, color:B.ink,
+          <div className="hero-badge" style={{ display: 'inline-block' }}><Badge color={B.mint}>🚀 Now live in Suri, Birbhum</Badge></div>
+          <div className="hero-title" style={{ fontFamily:"'Lexend',sans-serif", fontSize:40, fontWeight:600, color:B.ink,
             lineHeight:1.15, margin:"16px 0 14px", letterSpacing:-.5 }}>
             Every home service,<br/>
             <span style={{ color:B.mint }}>on demand.</span>
           </div>
-          <div style={{ color:B.inkLight, fontSize:15, lineHeight:1.7, marginBottom:28, maxWidth:380 }}>
+          <div className="hero-sub" style={{ color:B.inkLight, fontSize:15, lineHeight:1.7, marginBottom:28, maxWidth:380 }}>
             Book plumbers, electricians, cleaners, AC technicians and more.
             Verified workers, live tracking, transparent pricing.
           </div>
-          <div style={{ display:"flex", gap:12 }}>
+          <div className="hero-btns" style={{ display:"flex", gap:12 }}>
             <button className="pbtn lg" onClick={()=>onTab("book")}>Book a Service →</button>
             <button className="pbtn outline lg" onClick={()=>onTab("services")}>Browse Services</button>
           </div>
         </div>
-        <MockMap height={260} workerActive/>
+        <div className="hero-map">
+          <MockMap height={260} workerActive/>
+        </div>
       </div>
 
       {/* Stats */}
@@ -33,7 +53,7 @@ export default function Home({ onBook, onTab, hasActive }) {
         {STATS.map(s => (
           <div key={s.label} className="stat-card">
             <div style={{ fontSize:28, marginBottom:10 }}>{s.icon}</div>
-            <div style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:700, color:B.ink }}>{s.val}</div>
+            <div style={{ fontFamily:"'Lexend',sans-serif", fontSize:28, fontWeight:600, color:B.ink }}>{s.val}</div>
             <div style={{ color:B.inkLight, fontSize:13, marginTop:4 }}>{s.label}</div>
           </div>
         ))}
@@ -75,7 +95,7 @@ export default function Home({ onBook, onTab, hasActive }) {
               <div style={{ width:48, height:48, borderRadius:14, flexShrink:0,
                 background:B.mintLight, border:`1.5px solid ${B.brd}`,
                 display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <span style={{ fontFamily:"'Fraunces',serif", fontSize:18, fontWeight:700, color:B.mint }}>{s.n}</span>
+                <span style={{ fontFamily:"'Lexend',sans-serif", fontSize:18, fontWeight:600, color:B.mint }}>{s.n}</span>
               </div>
               <div>
                 <div style={{ fontWeight:700, fontSize:15, color:B.ink, marginBottom:4 }}>{s.title}</div>
