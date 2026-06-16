@@ -4,21 +4,28 @@ import Home from './Home';
 import Services from './Services';
 import Booking from './Booking';
 import Auth from './Auth';
+import Profile from './Profile';
+import LiveTrack from './LiveTrack';
+import BookingHistory from './BookingHistory';
 import gsap from 'gsap';
 
 export default function CustomerApp() {
   const [activeTab, setActiveTab] = useState('home');
   const [preSelectedService, setPreSelectedService] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Changed to false to test login flow
+  const [userName, setUserName] = useState("John Doe");
+  const [userPhone, setUserPhone] = useState("9876543210");
   const contentRef = useRef(null);
 
   useEffect(() => {
-    if (contentRef.current && activeTab !== 'profile') {
+    // Only animate if not full screen auth
+    if (contentRef.current && !(activeTab === 'profile' && !isLoggedIn)) {
       gsap.fromTo(contentRef.current, 
         { opacity: 0, y: 16 }, 
         { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
       );
     }
-  }, [activeTab]);
+  }, [activeTab, isLoggedIn]);
 
   const handleBook = (service) => {
     setPreSelectedService(service);
@@ -29,8 +36,9 @@ export default function CustomerApp() {
     setActiveTab('track');
   };
 
-  if (activeTab === 'profile') {
-    return <Auth onLogin={() => setActiveTab('home')} />;
+  // If user is not logged in and tries to access profile, show Auth full-screen
+  if (activeTab === 'profile' && !isLoggedIn) {
+    return <Auth onLogin={(name, phone) => { setUserName(name); setUserPhone(phone); setIsLoggedIn(true); }} />;
   }
 
   return (
@@ -40,8 +48,9 @@ export default function CustomerApp() {
         {activeTab === 'home' && <Home onBook={handleBook} onTab={setActiveTab} hasActive={false} />}
         {activeTab === 'services' && <Services onBook={handleBook} />}
         {activeTab === 'book' && <Booking preService={preSelectedService} onConfirm={handleConfirm} />}
-        {activeTab === 'bookings' && <div className="page"><div className="section-title">My Bookings</div><div className="section-sub">Your booking history will appear here.</div></div>}
-        {activeTab === 'track' && <div className="page"><div className="section-title">Live Track</div><div className="section-sub">Tracking active service...</div></div>}
+        {activeTab === 'bookings' && <BookingHistory />}
+        {activeTab === 'track' && <LiveTrack />}
+        {activeTab === 'profile' && isLoggedIn && <Profile name={userName} phone={userPhone} onLogout={() => { setIsLoggedIn(false); setActiveTab('home'); }} />}
       </div>
     </div>
   );
