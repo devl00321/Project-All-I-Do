@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { B } from '../../constants';
 import { AllidoLogo, Spinner } from '../../components/Common';
+import gsap from 'gsap';
 
 export default function Auth({ onLogin }) {
   const [step, setStep] = useState("phone");
@@ -9,9 +10,20 @@ export default function Auth({ onLogin }) {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [cd, setCd] = useState(0);
+  
   const refs = useRef([]);
+  const stepRef = useRef(null);
 
   useEffect(() => { if(cd>0){const t=setTimeout(()=>setCd(c=>c-1),1000);return()=>clearTimeout(t);} }, [cd]);
+
+  useEffect(() => {
+    if (stepRef.current) {
+      gsap.fromTo(stepRef.current, 
+        { opacity: 0, y: 18 }, 
+        { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }
+      );
+    }
+  }, [step]);
 
   const sendOTP = () => {
     if (phone.length < 10) return;
@@ -34,11 +46,11 @@ export default function Auth({ onLogin }) {
         <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:48 }}>
           <AllidoLogo size={52}/>
           <div>
-            <div style={{ fontFamily:"'Fraunces',serif", fontSize:32, fontWeight:700, color:B.ink, letterSpacing:-1 }}>All<span style={{ color: B.mint }}>i</span>Do</div>
+            <div style={{ fontFamily:"'Lexend',sans-serif", fontSize:32, fontWeight:600, color:B.ink, letterSpacing:-1 }}>All<span style={{ color: B.mint }}>i</span>Do</div>
             <div style={{ color:B.inkLight, fontSize:13 }}>All I Do</div>
           </div>
         </div>
-        <div style={{ fontFamily:"'Fraunces',serif", fontSize:42, fontWeight:700, color:B.ink,
+        <div style={{ fontFamily:"'Lexend',sans-serif", fontSize:42, fontWeight:600, color:B.ink,
           lineHeight:1.15, marginBottom:20, maxWidth:420 }}>
           Every home service,<br/>
           <span style={{ color:B.mint }}>at your doorstep.</span>
@@ -61,10 +73,10 @@ export default function Auth({ onLogin }) {
       {/* Right panel */}
       <div style={{ width:480, display:"flex", alignItems:"center", justifyContent:"center",
         padding:48, background:"#fff" }}>
-        <div style={{ width:"100%", maxWidth:360 }}>
+        <div style={{ width:"100%", maxWidth:360 }} ref={stepRef}>
           {step==="phone" && (
-            <div style={{ animation:"fadeUp .35s ease" }}>
-              <div style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:700,
+            <div>
+              <div style={{ fontFamily:"'Lexend',sans-serif", fontSize:28, fontWeight:600,
                 color:B.ink, marginBottom:6 }}>Sign in</div>
               <div style={{ color:B.inkLight, fontSize:14, marginBottom:32 }}>
                 Enter your mobile number to continue
@@ -91,8 +103,8 @@ export default function Auth({ onLogin }) {
             </div>
           )}
           {step==="otp" && (
-            <div style={{ animation:"fadeUp .35s ease" }}>
-              <div style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:700, color:B.ink, marginBottom:6 }}>
+            <div>
+              <div style={{ fontFamily:"'Lexend',sans-serif", fontSize:28, fontWeight:600, color:B.ink, marginBottom:6 }}>
                 Verify OTP
               </div>
               <div style={{ color:B.inkLight, fontSize:14, marginBottom:32 }}>Sent to +91 {phone}</div>
@@ -117,8 +129,8 @@ export default function Auth({ onLogin }) {
             </div>
           )}
           {step==="name" && (
-            <div style={{ animation:"fadeUp .35s ease" }}>
-              <div style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:700, color:B.ink, marginBottom:6 }}>
+            <div>
+              <div style={{ fontFamily:"'Lexend',sans-serif", fontSize:28, fontWeight:600, color:B.ink, marginBottom:6 }}>
                 Almost there!
               </div>
               <div style={{ color:B.inkLight, fontSize:14, marginBottom:28 }}>What should we call you?</div>

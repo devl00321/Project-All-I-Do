@@ -1,19 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { B } from '../constants';
 import logoImg from '../assets/logo.jpg';
+import gsap from 'gsap';
 
-export const Spinner = ({ color = B.mint }) => (
-  <span style={{ display:"inline-flex", gap:4, alignItems:"center" }}>
-    {[0,1,2].map(i => (
-      <span key={i} style={{
-        width:6, height:6, borderRadius:"50%", background:color,
-        display:"inline-block",
-        animation:`bounce3 1.2s infinite ease-in-out`,
-        animationDelay:`${i*.15}s`,
-      }}/>
-    ))}
-  </span>
-);
+export const Spinner = ({ color = B.mint }) => {
+  const dotsRef = useRef([]);
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.to(dotsRef.current, {
+        scale: 0,
+        opacity: 0.5,
+        duration: 0.6,
+        stagger: { each: 0.15, repeat: -1, yoyo: true },
+        ease: "power1.inOut"
+      });
+    });
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <span style={{ display:"inline-flex", gap:4, alignItems:"center" }}>
+      {[0,1,2].map(i => (
+        <span key={i} ref={el => dotsRef.current[i] = el} style={{
+          width:6, height:6, borderRadius:"50%", background:color,
+          display:"inline-block"
+        }}/>
+      ))}
+    </span>
+  );
+};
 
 export const Badge = ({ children, color=B.mint }) => (
   <span className="chip" style={{ background:`${color}18`, color, border:`1.5px solid ${color}44` }}>
@@ -27,6 +42,8 @@ export const AllidoLogo = ({ size=40 }) => (
 
 export function MockMap({ height=280, workerActive=true }) {
   const [pos, setPos] = useState({ x:38, y:55 });
+  const pathRef = useRef(null);
+
   useEffect(() => {
     if (!workerActive) return;
     const t = setInterval(() => setPos(p => ({
@@ -34,6 +51,19 @@ export function MockMap({ height=280, workerActive=true }) {
       y: Math.max(15, Math.min(72, p.y + (Math.random()-.5)*4)),
     })), 1900);
     return () => clearInterval(t);
+  }, [workerActive]);
+
+  useEffect(() => {
+    if (!workerActive || !pathRef.current) return;
+    const ctx = gsap.context(() => {
+      gsap.to(pathRef.current, {
+        strokeDashoffset: -12,
+        duration: 1.2,
+        repeat: -1,
+        ease: "none"
+      });
+    });
+    return () => ctx.revert();
   }, [workerActive]);
 
   return (
@@ -53,9 +83,8 @@ export function MockMap({ height=280, workerActive=true }) {
             stroke="white" strokeWidth="5" strokeOpacity=".6"/>
         ))}
         {workerActive && (
-          <path d={`M ${pos.x}% ${pos.y}% L 78% 82%`}
-            stroke={B.mint} strokeWidth="2.5" strokeDasharray="7 5" fill="none" opacity=".8"
-            style={{ animation:"dashMove 1.2s linear infinite" }}/>
+          <path ref={pathRef} d={`M ${pos.x}% ${pos.y}% L 78% 82%`}
+            stroke={B.mint} strokeWidth="2.5" strokeDasharray="7 5" fill="none" opacity=".8" />
         )}
         {workerActive && <>
           <circle cx={`${pos.x}%`} cy={`${pos.y}%`} r="14" fill={B.mint} opacity=".15">
