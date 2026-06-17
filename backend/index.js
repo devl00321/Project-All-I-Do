@@ -1,8 +1,10 @@
 const express = require('express');
 const http = require('http');
+const path = require('path');
 const { Server } = require('socket.io');
 const cors = require('cors');
 require('dotenv').config();
+const db = require('./models');
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +17,18 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Attach io to req object so routes can emit events
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+const apiRoutes = require('./routes/api');
+app.use('/api', apiRoutes);
 
 const Razorpay = require('razorpay');
 
@@ -43,16 +57,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'allido-backend' });
 });
 
-io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
-
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-  });
-});
+require('./socketHandlers')(io);
 
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => {
-  console.log(`ALLIDO Backend running on port ${PORT}`);
-});
+db.sequelize.sync({ alter: true })
+  .then(() => {
+    console.log('Database synced successfully.');
+    server.listen(PORT, () => {
+      console.log(`ALLIDO Backend running on port ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('Unable to connect to the database:', err);
+  });
