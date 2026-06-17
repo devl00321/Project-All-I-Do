@@ -4,6 +4,7 @@ import { B, SERVICES, TIME_SLOTS } from '../../constants';
 import { Badge, Spinner } from '../../components/Common';
 import CheckoutPayment from './CheckoutPayment';
 import gsap from 'gsap';
+import api from '../../utils/api';
 
 export default function Booking({ preService, onConfirm }) {
   const [selSvc, setSelSvc] = useState(preService || null);
@@ -229,9 +230,19 @@ export default function Booking({ preService, onConfirm }) {
                             name: "ALLIDO Services",
                             description: "Payment for " + (selSvc?.label || "Service"),
                             order_id: order.id,
-                            handler: function (response) {
+                            handler: async function (response) {
                               setConfirming(false);
-                              onConfirm(selSvc);
+                              try {
+                                const res = await api.post('/bookings', {
+                                  service: selSvc.label,
+                                  scheduled_time: new Date(),
+                                  total_amount: 499
+                                });
+                                onConfirm({ ...selSvc, bookingId: res.data.id });
+                              } catch(e) {
+                                console.error(e);
+                                onConfirm(selSvc);
+                              }
                             },
                             prefill: {
                               name: "Wahid User",
@@ -253,9 +264,20 @@ export default function Booking({ preService, onConfirm }) {
                         }
                       } else {
                         // Cash on Delivery and Internal Wallet skip Razorpay
-                        setTimeout(() => {
-                          setConfirming(false);
-                          onConfirm(selSvc);
+                        setTimeout(async () => {
+                          try {
+                            const res = await api.post('/bookings', {
+                              service: selSvc.label,
+                              scheduled_time: new Date(),
+                              total_amount: 349
+                            });
+                            setConfirming(false);
+                            onConfirm({ ...selSvc, bookingId: res.data.id });
+                          } catch(e) {
+                            console.error(e);
+                            setConfirming(false);
+                            onConfirm(selSvc);
+                          }
                         }, 1400);
                       }
                     }}>

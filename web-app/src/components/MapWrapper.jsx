@@ -20,7 +20,6 @@ const homeIcon = new L.Icon({
 });
 
 // Dummy coordinates for Suri, Birbhum
-const workerPos = [23.9054, 87.5276];
 const homePos = [23.9100, 87.5200];
 
 // Component to adjust bounds to fit markers
@@ -32,8 +31,9 @@ function ChangeView({ bounds }) {
   return null;
 }
 
-export default function MapWrapper({ height = 320 }) {
-  const bounds = L.latLngBounds(workerPos, homePos);
+export default function MapWrapper({ height = 320, workerPos = [23.9054, 87.5276], showWorker = true }) {
+  // If worker is not shown, center map on home. Otherwise, bound both.
+  const bounds = showWorker ? L.latLngBounds(workerPos, homePos) : L.latLngBounds(homePos, homePos);
 
   return (
     <div style={{ height, width: "100%", borderRadius: "12px", overflow: "hidden", zIndex: 0, position: "relative" }}>
@@ -47,9 +47,11 @@ export default function MapWrapper({ height = 320 }) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        <Marker position={workerPos} icon={workerIcon}>
-          <Popup>Rajesh Kumar (Worker)</Popup>
-        </Marker>
+        {showWorker && (
+          <Marker position={workerPos} icon={workerIcon}>
+            <Popup>Assigned Worker</Popup>
+          </Marker>
+        )}
         
         <Marker position={homePos} icon={homeIcon}>
           <Popup>Your Location</Popup>

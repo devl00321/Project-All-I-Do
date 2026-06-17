@@ -12,9 +12,10 @@ import gsap from 'gsap';
 export default function CustomerApp() {
   const [activeTab, setActiveTab] = useState('home');
   const [preSelectedService, setPreSelectedService] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Changed to false to test login flow
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("John Doe");
   const [userPhone, setUserPhone] = useState("9876543210");
+  const [activeBookingId, setActiveBookingId] = useState(null);
   const contentRef = useRef(null);
 
   useEffect(() => {
@@ -32,7 +33,8 @@ export default function CustomerApp() {
     setActiveTab('book');
   };
 
-  const handleConfirm = (service) => {
+  const handleConfirm = (data) => {
+    setActiveBookingId(data.bookingId);
     setActiveTab('track');
   };
 
@@ -49,7 +51,7 @@ export default function CustomerApp() {
         {activeTab === 'services' && <Services onBook={handleBook} />}
         {activeTab === 'book' && <Booking preService={preSelectedService} onConfirm={handleConfirm} />}
         {activeTab === 'bookings' && <BookingHistory />}
-        {activeTab === 'track' && <LiveTrack />}
+        {activeTab === 'track' && <LiveTrack bookingId={activeBookingId} />}
         {activeTab === 'profile' && isLoggedIn && <Profile name={userName} phone={userPhone} onLogout={() => { setIsLoggedIn(false); setActiveTab('home'); }} />}
       </div>
     </div>
