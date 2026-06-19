@@ -1,4 +1,25 @@
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+
+@theme {
+  --color-mint: #5DCAA5;
+  --color-mint-dark: #3BAF8A;
+  --color-mint-deep: #085041;
+  --color-mint-light: #E1F5EE;
+  --color-mint-fog: #F4FBF8;
+  --color-teal: #1D9E75;
+  --color-ink: #0F2E25;
+  --color-ink-mid: #2D6B58;
+  --color-ink-light: #4A7A68;
+  --color-muted: #8AADA1;
+  --color-faint: #C5DDD6;
+  --color-err: #C0392B;
+  --color-err-bg: #FDECEA;
+  --color-warn: #B87A14;
+  --color-warn-bg: #FEF3DC;
+  --color-ok: #1D9E75;
+}
+
 
 :root {
   --mint: #5DCAA5;
@@ -47,6 +68,7 @@ body {
   color: var(--ink);
   line-height: 1.6;
   font-size: 15px;
+  margin: 0;
 }
 
 ::-webkit-scrollbar { width: 6px; }

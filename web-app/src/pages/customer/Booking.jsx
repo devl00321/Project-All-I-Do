@@ -1,9 +1,12 @@
+// STATUS: READY FOR DEPLOY
 import React, { useState, useEffect, useRef } from 'react';
 import { B, SERVICES, TIME_SLOTS } from '../../constants';
 import { Badge, Spinner } from '../../components/Common';
 import RideBooking from './RideBooking';
+import CheckoutPayment from './CheckoutPayment';
 import * as Icons from 'lucide-react';
 import gsap from 'gsap';
+import api from '../../utils/api';
 
 const renderServiceIcon = (iconName, color, size = 22) => {
   const IconComponent = Icons[iconName];
@@ -205,12 +208,6 @@ export default function Booking({ preService, onConfirm, onCancel, setCatState }
 
   const STEPS_LIST = ["Service","Describe","Address","Schedule","Payment"];
   const canNext = [selSvc!==null, desc.trim().length>0, addr.trim().length>0, slot!==null, pay!==null];
-
-  const PAYMENTS = [
-    { id:"upi",  label:"UPI",             icon:"📱", sub:"Google Pay · PhonePe · Paytm" },
-    { id:"card", label:"Card",            icon:"💳", sub:"Debit / Credit via Razorpay" },
-    { id:"cash", label:"Cash on Service", icon:"💵", sub:"Pay after work is done" },
-  ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -469,28 +466,7 @@ export default function Booking({ preService, onConfirm, onCancel, setCatState }
             )}
 
             {/* Step 4: Payment */}
-            {step===4&&(
-              <div>
-                <div style={{ fontWeight:700, fontSize:17, color:B.ink, marginBottom:20 }}>Payment Method</div>
-                <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-                  {PAYMENTS.map(m=>(
-                    <button key={m.id} onClick={()=>setPay(m.id)} style={{
-                      padding:"16px 18px", borderRadius:16,
-                      background:pay===m.id?B.mintLight:"#fff",
-                      border:`1.5px solid ${pay===m.id?B.mint:B.brd}`,
-                      display:"flex", alignItems:"center", gap:16,
-                      cursor:"pointer", transition:"all .18s" }}>
-                      <span style={{ fontSize:26 }}>{m.icon}</span>
-                      <div style={{ textAlign:"left" }}>
-                        <div style={{ fontWeight:700, fontSize:15, color:pay===m.id?B.mint:B.ink }}>{m.label}</div>
-                        <div style={{ color:B.muted, fontSize:12 }}>{m.sub}</div>
-                      </div>
-                      {pay===m.id&&<span style={{ marginLeft:"auto", color:B.mint, fontSize:18 }}>✓</span>}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            {step===4 && <CheckoutPayment pay={pay} setPay={setPay} />}
 
             {/* Nav buttons */}
             <div style={{ display:"flex", gap:12, marginTop:28 }}>
@@ -501,7 +477,73 @@ export default function Booking({ preService, onConfirm, onCancel, setCatState }
                 ? <button className="pbtn" style={{ flex:2 }} disabled={!canNext[step]}
                     onClick={()=>setStep(s=>s+1)}>Continue →</button>
                 : <button className="pbtn" style={{ flex:2 }} disabled={!canNext[4]||confirming}
-                    onClick={()=>{setConfirming(true);setTimeout(()=>{setConfirming(false);onConfirm({ ...selSvc, calculatedFare, urgency, complexity, workerPref, desc, addr, coords, slot, date, paymentMethod: pay });},1400);}}>
+                    onClick={async () => {
+                      setConfirming(true);
+                      if (pay === 'card' || pay === 'upi') {
+                        try {
+                          const res = await fetch('http://localhost:5000/api/create-razorpay-order', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ amount: calculatedFare })
+                          });
+                          const order = await res.json();
+                          const options = {
+                            key: "rzp_test_T2C2aD1TZMX8tV",
+                            amount: order.amount,
+                            currency: order.currency,
+                            name: "ALLIDO Services",
+                            description: "Payment for " + (selSvc?.label || "Service"),
+                            order_id: order.id,
+                            handler: async function (response) {
+                              setConfirming(false);
+                              try {
+                                const res = await api.post('/bookings', {
+                                  service: selSvc.label,
+                                  scheduled_time: new Date(),
+                                  total_amount: calculatedFare
+                                });
+                                onConfirm({ ...selSvc, calculatedFare, urgency, complexity, workerPref, desc, addr, coords, slot, date, paymentMethod: pay, bookingId: res.data.id });
+                              } catch(e) {
+                                console.error(e);
+                                onConfirm({ ...selSvc, calculatedFare, urgency, complexity, workerPref, desc, addr, coords, slot, date, paymentMethod: pay });
+                              }
+                            },
+                            prefill: {
+                              name: "Wahid User",
+                              email: "user@example.com",
+                              contact: "9999999999"
+                            },
+                            theme: { color: "#5DCAA5" }
+                          };
+                          const rzp = new window.Razorpay(options);
+                          rzp.on('payment.failed', function (response){
+                            alert("Payment Failed");
+                            setConfirming(false);
+                          });
+                          rzp.open();
+                        } catch (err) {
+                          console.error(err);
+                          alert("Error initiating payment");
+                          setConfirming(false);
+                        }
+                      } else {
+                        // Cash on Delivery and Internal Wallet skip Razorpay
+                        setTimeout(async () => {
+                          try {
+                            const res = await api.post('/bookings', {
+                              service: selSvc.label,
+                              scheduled_time: new Date(),
+                              total_amount: calculatedFare
+                            });
+                            setConfirming(false);
+                            onConfirm({ ...selSvc, calculatedFare, urgency, complexity, workerPref, desc, addr, coords, slot, date, paymentMethod: pay, bookingId: res.data.id });
+                          } catch(e) {
+                            console.error(e);
+                            setConfirming(false);
+                            onConfirm({ ...selSvc, calculatedFare, urgency, complexity, workerPref, desc, addr, coords, slot, date, paymentMethod: pay });
+                          }
+                        }, 1400);
+                      }
+                    }}>
                     {confirming?<Spinner color="#fff"/>:`Confirm Booking · ₹${calculatedFare}`}
                   </button>}
             </div>

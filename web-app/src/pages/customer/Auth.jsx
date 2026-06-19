@@ -137,9 +137,9 @@ export default function Auth({ onLogin }) {
               <label style={{ display:"block", fontSize:13, fontWeight:600, color:B.inkLight, marginBottom:8 }}>Your Name</label>
               <input className="fi" placeholder="Full name" value={name} style={{ marginBottom:20 }}
                 onChange={e=>setName(e.target.value)}
-                onKeyDown={e=>e.key==="Enter"&&name.trim()&&onLogin()}/>
+                onKeyDown={e=>e.key==="Enter"&&name.trim()&&onLogin(name, phone)}/>
               <button className="pbtn" style={{ width:"100%" }} disabled={!name.trim()||loading}
-                onClick={()=>{setLoading(true);setTimeout(()=>{setLoading(false);onLogin();},600);}}>
+                onClick={()=>{setLoading(true);setTimeout(()=>{setLoading(false);onLogin(name, phone);},600);}}>
                 {loading ? <Spinner color="#fff"/> : "Enter Dashboard →"}
               </button>
             </div>

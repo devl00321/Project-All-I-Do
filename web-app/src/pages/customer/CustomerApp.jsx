@@ -7,11 +7,17 @@ import LiveTracking from './LiveTracking';
 import Auth from './Auth';
 import CatCompanion from '../../components/CatCompanion';
 import KittenChatbot from '../../components/KittenChatbot';
+import Profile from './Profile';
+import LiveTrack from './LiveTrack';
+import BookingHistory from './BookingHistory';
 import gsap from 'gsap';
 
 export default function CustomerApp() {
   const [activeTab, setActiveTab] = useState('home');
   const [preSelectedService, setPreSelectedService] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("John Doe");
+  const [userPhone, setUserPhone] = useState("9876543210");
   const [activeBookingId, setActiveBookingId] = useState(null);
   const [activeBooking, setActiveBooking] = useState(null);
   const [bookingHistory, setBookingHistory] = useState([
@@ -65,13 +71,14 @@ export default function CustomerApp() {
   }, [activeTab, preSelectedService, showSplash, showNotice]);
 
   useEffect(() => {
-    if (contentRef.current && activeTab !== 'profile') {
+    // Only animate if not full screen auth
+    if (contentRef.current && !(activeTab === 'profile' && !isLoggedIn)) {
       gsap.fromTo(contentRef.current, 
         { opacity: 0, y: 16 }, 
         { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
       );
     }
-  }, [activeTab]);
+  }, [activeTab, isLoggedIn]);
 
   const handleBook = (service) => {
     setPreSelectedService(service);
@@ -79,7 +86,7 @@ export default function CustomerApp() {
   };
 
   const handleConfirm = (bookingData) => {
-    const randomId = `BK-${Math.floor(1000 + Math.random() * 9000)}`;
+    const randomId = bookingData.bookingId || `BK-${Math.floor(1000 + Math.random() * 9000)}`;
     const newBooking = {
       id: randomId,
       date: "Today",
@@ -124,8 +131,9 @@ export default function CustomerApp() {
     }, 2000);
   };
 
-  if (activeTab === 'profile') {
-    return <Auth onLogin={() => setActiveTab('home')} />;
+  // If user is not logged in and tries to access profile, show Auth full-screen
+  if (activeTab === 'profile' && !isLoggedIn) {
+    return <Auth onLogin={(name, phone) => { setUserName(name); setUserPhone(phone); setIsLoggedIn(true); }} />;
   }
 
   return (
@@ -164,36 +172,15 @@ export default function CustomerApp() {
             setCatState={setCatState}
           />
         )}
-        {activeTab === 'bookings' && (
-          <div className="page">
-            <div className="section-title">My Bookings</div>
-            <div className="section-sub">Your booking history will appear here.</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {bookingHistory.map(bk => (
-                <div key={bk.id} className="booking-row" style={{ justifyContent: 'space-between', padding: '16px 20px', background: '#fff' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'left' }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontWeight: 700, fontSize: '15px', color: '#0F2E25' }}>{bk.service}</span>
-                        <span style={{ fontSize: '10px', background: '#F7FAF9', color: '#8AADA1', padding: '2px 6px', borderRadius: '4px' }}>{bk.id}</span>
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#4A7A68', marginTop: '4px' }}>
-                        Date: {bk.date} · Partner: {bk.worker} ({bk.workerRating || "4.8★"})
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontWeight: 700, fontSize: '15px', color: '#1D9E75' }}>{bk.amount}</div>
-                    <div style={{ fontSize: '11px', color: '#8AADA1' }}>Paid via {bk.paymentMethod}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {activeTab === 'bookings' && <BookingHistory />}
         {activeTab === 'track' && (
-          <LiveTracking activeBooking={activeBooking} onCancel={handleCancelBooking} onComplete={handleCompleteBooking} />
+          activeBooking ? (
+            <LiveTracking activeBooking={activeBooking} onCancel={handleCancelBooking} onComplete={handleCompleteBooking} />
+          ) : (
+            <LiveTrack bookingId={activeBookingId} />
+          )
         )}
+        {activeTab === 'profile' && isLoggedIn && <Profile name={userName} phone={userPhone} onLogout={() => { setIsLoggedIn(false); setActiveTab('home'); }} />}
       </div>
 
       {/* Floating Cat Companion and Chatbot Assistant */}
