@@ -23,26 +23,29 @@ export const B = {
 };
 
 export const SERVICES = [
-  { id:"plumber",      label:"Plumber",       emoji:"🔧", color:"#3B82F6", eta:"30–45 min", desc:"Leak fixes, pipe work, faucet replacement" },
-  { id:"electrician",  label:"Electrician",   emoji:"⚡", color:"#F59E0B", eta:"25–40 min", desc:"Wiring, switches, MCB, fan installation" },
-  { id:"carpenter",    label:"Carpenter",     emoji:"🪚", color:"#8B5CF6", eta:"45–60 min", desc:"Furniture repair, door fitting, shelves" },
-  { id:"ac_repair",    label:"AC Repair",     emoji:"❄️", color:"#0EA5E9", eta:"40–55 min", desc:"Gas refill, servicing, installation" },
-  { id:"cleaning",     label:"Cleaning",      emoji:"🧹", color:"#10B981", eta:"60–90 min", desc:"Deep clean, sofa, bathroom, kitchen" },
-  { id:"car_rental",   label:"Car/Bike Rental",emoji:"🚗", color:"#F97316", eta:"20–30 min", desc:"Self-drive or with driver, hourly/daily" },
-  { id:"driver",       label:"Driver",        emoji:"🚐", color:"#EC4899", eta:"15–25 min", desc:"Personal driver on demand, trained & verified" },
-  { id:"laundry",      label:"Laundry",       emoji:"👕", color:"#6366F1", eta:"Same day",  desc:"Wash, iron, dry clean, pickup & delivery" },
-  { id:"pest_control", label:"Pest Control",  emoji:"🦟", color:"#14B8A6", eta:"60–90 min", desc:"Cockroaches, termites, mosquitoes, rats" },
+  { id:"plumber",      label:"Plumber",       emoji:"🔧", icon:"Wrench", color:"#3B82F6", eta:"30–45 min", basePrice: 250, placeholder: "e.g. Bathroom tap is leaking continuously, water dripping from the joint...", desc:"Leak fixes, pipe work, faucet replacement" },
+  { id:"electrician",  label:"Electrician",   emoji:"⚡", icon:"Zap", color:"#F59E0B", eta:"25–40 min", basePrice: 200, placeholder: "e.g. Wall socket is sparking when turning on AC, or ceiling fan is not working...", desc:"Wiring, switches, MCB, fan installation" },
+  { id:"carpenter",    label:"Carpenter",     emoji:"🪚", icon:"Hammer", color:"#8B5CF6", eta:"45–60 min", basePrice: 300, placeholder: "e.g. Wooden wardrobe door hinge is broken and needs to be replaced...", desc:"Furniture repair, door fitting, shelves" },
+  { id:"ac_repair",    label:"AC Repair",     emoji:"❄️", icon:"Wind", color:"#0EA5E9", eta:"40–55 min", basePrice: 400, placeholder: "e.g. AC is running but not cooling, or water is dripping from indoor unit...", desc:"Gas refill, servicing, installation" },
+  { id:"cleaning",     label:"Cleaning",      emoji:"🧹", icon:"Sparkles", color:"#10B981", eta:"60–90 min", basePrice: 500, placeholder: "e.g. Deep cleaning of kitchen cabinets and tiles, bathroom deep clean...", desc:"Deep clean, sofa, bathroom, kitchen" },
+  { id:"car_rental",   label:"Car/Bike Rental",emoji:"🚗", icon:"Car", color:"#F97316", eta:"20–30 min", basePrice: 0, placeholder: "", desc:"Self-drive or with driver, hourly/daily" },
+  { id:"driver",       label:"Driver",        emoji:"🚐", icon:"Compass", color:"#EC4899", eta:"15–25 min", basePrice: 0, placeholder: "", desc:"Personal driver on demand, trained & verified" },
+  { id:"laundry",      label:"Laundry",       emoji:"👕", icon:"Shirt", color:"#6366F1", eta:"Same day",  basePrice: 150, placeholder: "e.g. Need 5 shirts washed and ironed, and 2 winter jackets dry cleaned...",  desc:"Wash, iron, dry clean, pickup & delivery" },
+  { id:"pest_control", label:"Pest Control",  emoji:"🦟", icon:"Bug", color:"#14B8A6", eta:"60–90 min", basePrice: 650, placeholder: "e.g. Termite control needed in master bedroom wooden cupboards...", desc:"Cockroaches, termites, mosquitoes, rats" },
+  { id:"mechanic",     label:"Mechanic",      emoji:"🔧", icon:"Wrench", color:"#4F46E5", eta:"30–50 min", basePrice: 350, placeholder: "e.g. Bike engine making a rattling noise, or car starter motor not turning over...", desc:"Car & bike repair, general servicing" },
+  { id:"emergency_fuel", label:"Emergency Fuel",emoji:"⛽", icon:"Fuel", color:"#EF4444", eta:"15–25 min", basePrice: 180, placeholder: "e.g. Ran out of fuel near Lal Bazar, need 5 liters of Petrol delivered...", desc:"Fuel delivery (Petrol/Diesel) anywhere" },
+  { id:"porter",       label:"Porter",        emoji:"📦", icon:"Truck", color:"#10B981", eta:"20–40 min", basePrice: 280, placeholder: "e.g. Moving 3 heavy cardboard boxes and a single mattress to 2nd floor...", desc:"Local goods shifting, heavy packing" }
 ];
 
 export const STATS = [
-  { val:"12,400+", label:"Happy Customers", icon:"😊" },
-  { val:"850+",    label:"Verified Workers", icon:"👷" },
-  { val:"4.8★",    label:"Avg. Rating",      icon:"⭐" },
-  { val:"< 45min", label:"Avg. Response",    icon:"⚡" },
+  { val:"12,400+", label:"Happy Customers", icon:"Smile", color:"#10B981" },
+  { val:"850+",    label:"Verified Workers", icon:"ShieldCheck", color:"#3B82F6" },
+  { val:"4.8★",    label:"Avg. Rating",      icon:"Star", color:"#F59E0B" },
+  { val:"< 45min", label:"Avg. Response",    icon:"Zap", color:"#8B5CF6" },
 ];
 
 export const STEPS = [
-  { n:"01", title:"Choose a Service",   desc:"Browse 9+ categories and tap the service you need." },
+  { n:"01", title:"Choose a Service",   desc:"Browse 12+ categories and tap the service you need." },
   { n:"02", title:"Describe Your Need", desc:"Add a description and photos for a quick diagnosis." },
   { n:"03", title:"Pick a Time Slot",   desc:"Choose a convenient window — today or tomorrow." },
   { n:"04", title:"Worker Arrives",     desc:"Your verified local expert arrives and gets to work." },
