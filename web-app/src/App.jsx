@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
 import CustomerApp from './pages/customer/CustomerApp';
 import AdminAuth from './pages/admin/AdminAuth';
 import AdminRegister from './pages/admin/AdminRegister';
@@ -14,15 +15,19 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<CustomerApp />} />
-        <Route path="/admin" element={<AdminAuth />} />
-        <Route path="/admin/register" element={<AdminRegister />} />
+        {/* Landing Page */}
+        <Route path="/" element={<LandingPage />} />
+
+        {/* Customer Portal */}
+        <Route path="/book/*" element={<CustomerApp />} />
         
         {/* Admin/Dealer Portal */}
+        <Route path="/admin/login" element={<AdminAuth />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="profile" element={<Profile />} />
         </Route>
+        <Route path="/admin/register" element={<AdminRegister />} />
 
         {/* HQ Portal */}
         <Route path="/hq" element={<HqAuth />} />

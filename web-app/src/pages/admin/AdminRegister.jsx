@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Upload, X } from 'lucide-react';
+import { Camera, Upload, X, MapPin, Phone, ShieldCheck, Mail, Lock, User, FileText, Fingerprint } from 'lucide-react';
 import { B } from '../../constants';
 import { Spinner } from '../../components/Common';
 import api from '../../utils/api';
@@ -75,7 +75,7 @@ export default function AdminRegister() {
     fd.append('pan_photo', panPhoto);
 
     try {
-      const res = await api.post('/dealer/register', fd, {
+      await api.post('/dealer/register', fd, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       alert("Registration successful! HQ will review your profile. You can now login.");
@@ -89,114 +89,186 @@ export default function AdminRegister() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: B.mintFog, padding: 24 }}>
-      <div className="card" style={{ width: '100%', maxWidth: 500, padding: 32 }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <h2 style={{ fontSize: 24, fontWeight: 700, color: B.ink }}>Dealer Partner Application</h2>
-          <p style={{ color: B.muted, fontSize: 14 }}>Join ALLIDO as a city operator</p>
-        </div>
+    <div className="register-screen">
+      <div className="login-dots"></div>
+      <div className="login-orb login-orb-1"></div>
+      <div className="login-orb login-orb-2"></div>
 
-        {error && <div style={{ background: B.errBg, color: B.err, padding: '12px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>{error}</div>}
-
-        <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-          {[1, 2, 3].map(i => (
-            <div key={i} style={{ flex: 1, height: 4, background: i <= step ? B.mint : B.brd, borderRadius: 2 }} />
-          ))}
-        </div>
-
-        {step === 1 && (
-          <div>
-            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Basic Details</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <input type="text" className="fi" placeholder="Full Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-              <input type="email" className="fi" placeholder="Business Email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-              <input type="password" className="fi" placeholder="Create Password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
-              <input type="text" className="fi" placeholder="Operating City (e.g. Suri)" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
-              <button className="pbtn" onClick={() => setStep(2)}>Next Step</button>
-              <div style={{ textAlign: 'center', fontSize: 13, marginTop: 16 }}>
-                Already a dealer? <a href="#" onClick={() => navigate('/admin')} style={{ color: B.mint, fontWeight: 600, textDecoration: 'none' }}>Login</a>
-              </div>
+      <div className="register-card">
+        <div className="register-card-head">
+          <div className="login-brand">
+            <div className="login-brand-icon">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 13L12 5L20 13M7 11V19H17V11" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
+            <span className="login-brand-name">ALLIDO</span>
           </div>
-        )}
+          <h1>Dealer Partner Application</h1>
+          <p>Join ALLIDO as a city operator to manage fleets and bookings.</p>
 
-        {step === 2 && (
-          <div>
-            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>KYC Document Details</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <input type="text" className="fi" placeholder="Aadhaar Number (12 digits)" value={formData.aadhaar_id} onChange={e => setFormData({...formData, aadhaar_id: e.target.value})} />
-              <input type="text" className="fi" placeholder="PAN Number (10 chars)" value={formData.pan_id} onChange={e => setFormData({...formData, pan_id: e.target.value})} />
-              <input type="text" className="fi" placeholder="Voter ID (optional)" value={formData.voter_id} onChange={e => setFormData({...formData, voter_id: e.target.value})} />
+          <div className="step-progress">
+            <div className={`step-seg ${step > 1 ? 'done' : step === 1 ? 'active' : ''}`}><div className="step-seg-fill"></div></div>
+            <div className={`step-seg ${step > 2 ? 'done' : step === 2 ? 'active' : ''}`}><div className="step-seg-fill"></div></div>
+            <div className={`step-seg ${step === 3 ? 'active' : ''}`}><div className="step-seg-fill"></div></div>
+          </div>
+          <div className="step-labels">
+            <div className={`step-label ${step >= 1 ? 'active' : ''}`}>Basic Info</div>
+            <div className={`step-label ${step >= 2 ? 'active' : ''}`}>KYC Details</div>
+            <div className={`step-label ${step >= 3 ? 'active' : ''}`}>Identity</div>
+          </div>
+        </div>
+
+        <div className="register-body">
+          {error && <div style={{ background: 'var(--errBg)', color: 'var(--err)', padding: '12px 16px', borderRadius: 12, fontSize: 14, fontWeight: 500, marginBottom: 20 }}>{error}</div>}
+
+          {step === 1 && (
+            <div className="animate-fade-in">
+              <h2 className="register-section-title">Step 1: Account Creation</h2>
               
-              <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-                <button className="gbtn" style={{ flex: 1 }} onClick={() => setStep(1)}>Back</button>
-                <button className="pbtn" style={{ flex: 1 }} onClick={() => setStep(3)}>Next Step</button>
+              <div className="info-box">
+                <ShieldCheck />
+                <p>Your data is securely encrypted. We only use this to set up your operator dashboard and verify your franchise eligibility.</p>
               </div>
-            </div>
-          </div>
-        )}
 
-        {step === 3 && (
-          <div>
-            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Identity Verification</h3>
-            
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: B.ink }}>1. Live Face Capture</div>
-              {!facePhoto ? (
-                <div style={{ border: `2px dashed ${B.brd}`, borderRadius: 12, padding: 16, textAlign: 'center' }}>
-                  {cameraActive ? (
-                    <div>
-                      <video ref={videoRef} autoPlay playsInline style={{ width: '100%', borderRadius: 8, marginBottom: 8 }} />
-                      <button className="pbtn" onClick={capturePhoto} style={{ width: '100%' }}>Capture Photo</button>
-                    </div>
-                  ) : (
-                    <div>
-                      <Camera size={32} color={B.muted} style={{ marginBottom: 8 }} />
-                      <p style={{ fontSize: 13, color: B.muted, marginBottom: 12 }}>We need to verify your identity.</p>
-                      <button className="gbtn" onClick={startCamera}>Start Camera</button>
-                    </div>
-                  )}
+              <div className="field-group">
+                <label className="field-label">Full Legal Name</label>
+                <div style={{position:'relative'}}>
+                  <User style={{position:'absolute', left:16, top:13, width:16, height:16, color:'var(--muted-2)'}} />
+                  <input className="field-input" style={{paddingLeft:44}} type="text" placeholder="As per government ID" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                 </div>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 12, background: B.okBg, borderRadius: 8, border: `1px solid ${B.ok}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: B.ok, fontWeight: 600, fontSize: 13 }}>
-                    <span>✅ Face Verified</span>
+              </div>
+
+              <div className="field-row">
+                <div className="field-group">
+                  <label className="field-label">Business Email</label>
+                  <div style={{position:'relative'}}>
+                    <Mail style={{position:'absolute', left:16, top:13, width:16, height:16, color:'var(--muted-2)'}} />
+                    <input className="field-input" style={{paddingLeft:44}} type="email" placeholder="you@company.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                   </div>
-                  <button onClick={() => setFacePhoto(null)} style={{ background: 'none', border: 'none', color: B.err, cursor: 'pointer' }}><X size={16} /></button>
                 </div>
-              )}
-              {/* Hidden canvas for image capture */}
-              <canvas ref={canvasRef} width="320" height="240" style={{ display: 'none' }} />
-            </div>
-
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: B.ink }}>2. Document Scans</div>
-              <div style={{ display: 'flex', gap: 12 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', padding: 16, textAlign: 'center', border: `2px dashed ${B.brd}`, borderRadius: 12, cursor: 'pointer', background: aadhaarPhoto ? B.mintLight : '#fff' }}>
-                    <Upload size={20} color={aadhaarPhoto ? B.mint : B.muted} />
-                    <div style={{ fontSize: 12, marginTop: 8, fontWeight: 600, color: aadhaarPhoto ? B.mint : B.muted }}>{aadhaarPhoto ? 'Aadhaar Uploaded' : 'Upload Aadhaar'}</div>
-                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setAadhaarPhoto(e.target.files[0])} />
-                  </label>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', padding: 16, textAlign: 'center', border: `2px dashed ${B.brd}`, borderRadius: 12, cursor: 'pointer', background: panPhoto ? B.mintLight : '#fff' }}>
-                    <Upload size={20} color={panPhoto ? B.mint : B.muted} />
-                    <div style={{ fontSize: 12, marginTop: 8, fontWeight: 600, color: panPhoto ? B.mint : B.muted }}>{panPhoto ? 'PAN Uploaded' : 'Upload PAN'}</div>
-                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setPanPhoto(e.target.files[0])} />
-                  </label>
+                <div className="field-group">
+                  <label className="field-label">Password</label>
+                  <div style={{position:'relative'}}>
+                    <Lock style={{position:'absolute', left:16, top:13, width:16, height:16, color:'var(--muted-2)'}} />
+                    <input className="field-input" style={{paddingLeft:44}} type="password" placeholder="Min 8 chars" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button className="gbtn" style={{ flex: 1 }} onClick={() => setStep(2)}>Back</button>
-              <button className="pbtn" style={{ flex: 2 }} onClick={handleSubmit} disabled={loading}>
-                {loading ? <Spinner color="#fff" /> : 'Submit Application'}
-              </button>
+              <div className="field-group">
+                <label className="field-label">Operating City</label>
+                <div style={{position:'relative'}}>
+                  <MapPin style={{position:'absolute', left:16, top:13, width:16, height:16, color:'var(--muted-2)'}} />
+                  <input className="field-input" style={{paddingLeft:44}} type="text" placeholder="e.g. Suri" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+                </div>
+              </div>
+
+              <button className="btn-full btn-mint" onClick={() => setStep(2)}>Continue to KYC →</button>
             </div>
+          )}
+
+          {step === 2 && (
+            <div className="animate-fade-in">
+              <h2 className="register-section-title">Step 2: KYC Documents</h2>
+              
+              <div className="info-box">
+                <Fingerprint />
+                <p>As an ALLIDO Dealer, you will handle worker assignments and payouts. Government verification is mandatory.</p>
+              </div>
+
+              <div className="field-group">
+                <label className="field-label">Aadhaar Number <span className="tag-inline" style={{marginLeft:8}}>Required</span></label>
+                <div style={{position:'relative'}}>
+                  <FileText style={{position:'absolute', left:16, top:13, width:16, height:16, color:'var(--muted-2)'}} />
+                  <input className="field-input" style={{paddingLeft:44, letterSpacing:'2px'}} type="text" placeholder="0000 0000 0000" value={formData.aadhaar_id} onChange={e => setFormData({...formData, aadhaar_id: e.target.value.replace(/[^0-9]/g, '').slice(0, 12)})} />
+                </div>
+              </div>
+
+              <div className="field-row">
+                <div className="field-group">
+                  <label className="field-label">PAN Number <span className="tag-inline" style={{marginLeft:8}}>Required</span></label>
+                  <input className="field-input" style={{letterSpacing:'1px', textTransform:'uppercase'}} type="text" placeholder="ABCDE1234F" value={formData.pan_id} onChange={e => setFormData({...formData, pan_id: e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10).toUpperCase()})} />
+                </div>
+                <div className="field-group">
+                  <label className="field-label">Voter ID <span style={{color:'var(--muted-2)', fontWeight:400, marginLeft:4}}>(Optional)</span></label>
+                  <input className="field-input" style={{letterSpacing:'1px', textTransform:'uppercase'}} type="text" placeholder="ABC1234567" value={formData.voter_id} onChange={e => setFormData({...formData, voter_id: e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10).toUpperCase()})} />
+                </div>
+              </div>
+
+              <div style={{display:'flex', gap:14, marginTop:24}}>
+                <button className="btn-full" style={{background:'var(--paper)', border:'1.5px solid var(--border-2)', color:'var(--ink)', flex:1}} onClick={() => setStep(1)}>Back</button>
+                <button className="btn-full btn-mint" style={{flex:2, marginTop:0}} onClick={() => setStep(3)}>Proceed to Identity →</button>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="animate-fade-in">
+              <h2 className="register-section-title">Step 3: Identity Verification</h2>
+              
+              <div style={{marginBottom: 24}}>
+                <div className="field-label" style={{marginBottom:10}}>1. Live Face Verification</div>
+                {!facePhoto ? (
+                  <div style={{ border: `2px dashed var(--border-2)`, borderRadius: 'var(--r-md)', padding: 20, textAlign: 'center', background: 'var(--paper)' }}>
+                    <div style={{ display: cameraActive ? 'block' : 'none' }}>
+                      <video ref={videoRef} autoPlay playsInline style={{ width: '100%', borderRadius: 12, border:'1px solid var(--border)', marginBottom: 12 }} />
+                      <button className="btn-full" style={{background:'var(--ink)', color:'#fff', padding:'10px'}} onClick={capturePhoto}>Capture Photo</button>
+                    </div>
+                    {!cameraActive && (
+                      <div>
+                        <div style={{width:50, height:50, borderRadius:'50%', background:'var(--mint-pale)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px'}}>
+                          <Camera size={24} color="var(--mint-dark)" />
+                        </div>
+                        <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 16 }}>Please look straight into the camera in a well-lit area.</p>
+                        <button className="btn-full" style={{background:'white', border:'1.5px solid var(--border-2)'}} onClick={startCamera}>Start Camera</button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: 'var(--mint-pale)', borderRadius: 'var(--r-md)', border: `1px solid rgba(93,202,165,.3)` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--mint-dark)', fontWeight: 600, fontSize: 13 }}>
+                      <CheckCircle2 size={18} /> Face Verified Successfully
+                    </div>
+                    <button onClick={() => setFacePhoto(null)} style={{ background: 'none', border: 'none', color: 'var(--coral)', cursor: 'pointer', display:'flex', alignItems:'center' }}><X size={16} /></button>
+                  </div>
+                )}
+                <canvas ref={canvasRef} width="320" height="240" style={{ display: 'none' }} />
+              </div>
+
+              <div style={{marginBottom: 24}}>
+                <div className="field-label" style={{marginBottom:10}}>2. Document Uploads</div>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', padding: 20, textAlign: 'center', border: `2px dashed ${aadhaarPhoto ? 'rgba(93,202,165,.4)' : 'var(--border-2)'}`, borderRadius: 'var(--r-md)', cursor: 'pointer', background: aadhaarPhoto ? 'var(--mint-pale)' : 'var(--paper)', transition:'all .2s' }}>
+                      <Upload size={24} color={aadhaarPhoto ? 'var(--mint-dark)' : 'var(--muted-2)'} style={{margin:'0 auto'}} />
+                      <div style={{ fontSize: 12, marginTop: 10, fontWeight: 600, color: aadhaarPhoto ? 'var(--mint-dark)' : 'var(--muted)' }}>{aadhaarPhoto ? 'Aadhaar Ready' : 'Upload Aadhaar'}</div>
+                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setAadhaarPhoto(e.target.files[0])} />
+                    </label>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', padding: 20, textAlign: 'center', border: `2px dashed ${panPhoto ? 'rgba(93,202,165,.4)' : 'var(--border-2)'}`, borderRadius: 'var(--r-md)', cursor: 'pointer', background: panPhoto ? 'var(--mint-pale)' : 'var(--paper)', transition:'all .2s' }}>
+                      <Upload size={24} color={panPhoto ? 'var(--mint-dark)' : 'var(--muted-2)'} style={{margin:'0 auto'}} />
+                      <div style={{ fontSize: 12, marginTop: 10, fontWeight: 600, color: panPhoto ? 'var(--mint-dark)' : 'var(--muted)' }}>{panPhoto ? 'PAN Ready' : 'Upload PAN'}</div>
+                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setPanPhoto(e.target.files[0])} />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{display:'flex', gap:14}}>
+                <button className="btn-full" style={{background:'var(--paper)', border:'1.5px solid var(--border-2)', color:'var(--ink)', flex:1}} onClick={() => setStep(2)}>Back</button>
+                <button className="btn-full btn-mint" style={{flex:2, marginTop:0}} onClick={handleSubmit} disabled={loading}>
+                  {loading ? <Spinner color="#fff" /> : 'Submit Application'}
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+        <div className="register-footer">
+          <div className="register-footer-text">
+            Already registered? <a href="#" onClick={(e) => { e.preventDefault(); navigate('/admin'); }}>Sign In</a>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

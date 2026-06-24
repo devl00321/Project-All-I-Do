@@ -11,6 +11,7 @@ import Profile from './Profile';
 import LiveTrack from './LiveTrack';
 import BookingHistory from './BookingHistory';
 import gsap from 'gsap';
+import { Search, Settings, MapPin } from 'lucide-react';
 
 export default function CustomerApp() {
   const [activeTab, setActiveTab] = useState('home');
@@ -59,7 +60,7 @@ export default function CustomerApp() {
       setCatState('sitting_right');
     } else {
       setCatState('sitting_left');
-      setIsChatOpen(false); // Close chat when Puffy sits on the left side to avoid mirror scale distortion
+      setIsChatOpen(false); // Close chat when Puffy sits on the left side
     }
     
     // Set active service toy playing
@@ -71,7 +72,6 @@ export default function CustomerApp() {
   }, [activeTab, preSelectedService, showSplash, showNotice]);
 
   useEffect(() => {
-    // Only animate if not full screen auth
     if (contentRef.current && !(activeTab === 'profile' && !isLoggedIn)) {
       gsap.fromTo(contentRef.current, 
         { opacity: 0, y: 16 }, 
@@ -101,7 +101,6 @@ export default function CustomerApp() {
     setActiveBooking(newBooking);
     setActiveBookingId(randomId);
     
-    // Trigger happy jumping state on booking confirmation
     setCatState('happy');
     setTimeout(() => {
       setActiveTab('track');
@@ -111,8 +110,6 @@ export default function CustomerApp() {
   const handleCancelBooking = () => {
     setActiveBooking(null);
     setActiveBookingId(null);
-    
-    // Trigger sad sigh on canceling service from tracking
     setCatState('sad');
     setTimeout(() => {
       setActiveTab('home');
@@ -124,20 +121,26 @@ export default function CustomerApp() {
     setActiveBooking(null);
     setActiveBookingId(null);
     
-    // Trigger happy moment on service completion
     setCatState('happy');
     setTimeout(() => {
       setActiveTab('bookings');
     }, 2000);
   };
 
-  // If user is not logged in and tries to access profile, show Auth full-screen
   if (activeTab === 'profile' && !isLoggedIn) {
     return <Auth onLogin={(name, phone) => { setUserName(name); setUserPhone(phone); setIsLoggedIn(true); }} />;
   }
 
+  // Determine topbar title
+  let topbarTitle = "Welcome, " + userName.split(' ')[0];
+  if (activeTab === 'services') topbarTitle = "Explore Services";
+  if (activeTab === 'book') topbarTitle = "New Booking";
+  if (activeTab === 'bookings') topbarTitle = "My Bookings";
+  if (activeTab === 'track') topbarTitle = "Live Tracking";
+  if (activeTab === 'profile') topbarTitle = "My Profile";
+
   return (
-    <div className="app-container">
+    <div className="dashboard-layout">
       {/* Splash overlay */}
       {showSplash && (
         <div className="cat-splash-overlay">
@@ -154,39 +157,55 @@ export default function CustomerApp() {
         </div>
       )}
 
-      <Sidebar tab={activeTab} onTab={setActiveTab} hasActive={activeBookingId !== null} />
-      <div className="main-content" ref={contentRef}>
-        {activeTab === 'home' && <Home onBook={handleBook} onTab={setActiveTab} hasActive={activeBookingId !== null} bookingHistory={bookingHistory} />}
-        {activeTab === 'services' && <Services onBook={handleBook} />}
-        {activeTab === 'book' && (
-          <Booking 
-            preService={preSelectedService} 
-            onConfirm={handleConfirm} 
-            onCancel={() => {
-              // Trigger sad state on cancellation
-              setCatState('sad');
-              setTimeout(() => {
-                setActiveTab('home');
-              }, 1800);
-            }} 
-            setCatState={setCatState}
-          />
-        )}
-        {activeTab === 'bookings' && <BookingHistory />}
-        {activeTab === 'track' && (
-          activeBooking ? (
-            <LiveTracking activeBooking={activeBooking} onCancel={handleCancelBooking} onComplete={handleCompleteBooking} />
-          ) : (
-            <LiveTrack bookingId={activeBookingId} />
-          )
-        )}
-        {activeTab === 'profile' && isLoggedIn && <Profile name={userName} phone={userPhone} onLogout={() => { setIsLoggedIn(false); setActiveTab('home'); }} />}
-      </div>
+      <Sidebar tab={activeTab} onTab={setActiveTab} hasActive={activeBookingId !== null} userName={userName} onLogout={() => { setIsLoggedIn(false); setActiveTab('home'); }} />
+      
+      <main className="dashboard-main">
+        <header className="topbar">
+          <div className="topbar-left">
+            <div className="topbar-title">{topbarTitle}</div>
+            <div className="topbar-sub">Suri, Birbhum</div>
+          </div>
+          <div className="topbar-right">
+            <div className="topbar-badge" style={{background:'var(--mint-pale)', color:'var(--mint-dark)', borderColor:'rgba(93,202,165,.25)'}}>
+              <MapPin size={12} />
+              Location Active
+            </div>
+            <button className="topbar-icon-btn"><Search /></button>
+            <button className="topbar-icon-btn" onClick={() => setActiveTab('profile')}><Settings /></button>
+          </div>
+        </header>
+
+        <div className="dash-content" ref={contentRef}>
+          {activeTab === 'home' && <Home onBook={handleBook} onTab={setActiveTab} hasActive={activeBookingId !== null} bookingHistory={bookingHistory} />}
+          {activeTab === 'services' && <Services onBook={handleBook} />}
+          {activeTab === 'book' && (
+            <Booking 
+              preService={preSelectedService} 
+              onConfirm={handleConfirm} 
+              onCancel={() => {
+                setCatState('sad');
+                setTimeout(() => {
+                  setActiveTab('home');
+                }, 1800);
+              }} 
+              setCatState={setCatState}
+            />
+          )}
+          {activeTab === 'bookings' && <BookingHistory />}
+          {activeTab === 'track' && (
+            activeBooking ? (
+              <LiveTracking activeBooking={activeBooking} onCancel={handleCancelBooking} onComplete={handleCompleteBooking} />
+            ) : (
+              <LiveTrack bookingId={activeBookingId} />
+            )
+          )}
+          {activeTab === 'profile' && isLoggedIn && <Profile name={userName} phone={userPhone} onLogout={() => { setIsLoggedIn(false); setActiveTab('home'); }} />}
+        </div>
+      </main>
 
       {/* Floating Cat Companion and Chatbot Assistant */}
       {!showSplash && !showNotice && (
         <>
-          {/* Kitten Chatbot Window (only when on right side of screen) */}
           {catState !== 'sitting_left' && (
             <KittenChatbot 
               isOpen={isChatOpen} 
@@ -195,7 +214,6 @@ export default function CustomerApp() {
             />
           )}
 
-          {/* Floating hint tooltip (only when on right side of screen and closed) */}
           {catState !== 'sitting_left' && !isChatOpen && (
             <div 
               className="puffy-chat-bubble-hint"

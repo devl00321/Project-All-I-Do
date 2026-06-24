@@ -48,11 +48,11 @@ export default function HqDashboard() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f1f5f9' }}>
-      <header style={{ background: '#0f172a', color: '#fff', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)' }}>
+      <header style={{ background: 'var(--ink)', color: '#fff', padding: '20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <span style={{ fontSize: 24 }}>🏢</span>
-          <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>HQ Global Portal</h1>
+          <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em', margin: 0 }}>HQ Global Portal</h1>
         </div>
         <button 
           onClick={handleLogout} 
@@ -62,8 +62,8 @@ export default function HqDashboard() {
         </button>
       </header>
 
-      <div style={{ padding: '32px', maxWidth: 1200, margin: '0 auto' }}>
-        <h2 style={{ fontSize: 24, fontWeight: 700, color: '#1e293b', marginBottom: 24 }}>Pending Dealer Requests</h2>
+      <div style={{ padding: '40px', maxWidth: 1200, margin: '0 auto' }}>
+        <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 28, fontWeight: 600, color: 'var(--ink)', letterSpacing: '-0.03em', marginBottom: 24 }}>Pending Dealer Requests</h2>
         
         {loading ? (
           <div>Loading requests...</div>
@@ -77,22 +77,22 @@ export default function HqDashboard() {
           <div className="card" style={{ padding: 24 }}>
             <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ borderBottom: `2px solid ${B.brd}` }}>
-                  <th style={{ padding: '12px', color: B.muted }}>City</th>
-                  <th style={{ padding: '12px', color: B.muted }}>Dealer Name</th>
-                  <th style={{ padding: '12px', color: B.muted }}>Email</th>
-                  <th style={{ padding: '12px', color: B.muted }}>Request Type</th>
-                  <th style={{ padding: '12px', color: B.muted }}>Action</th>
+                <tr style={{ borderBottom: `1.5px solid var(--brdMid)` }}>
+                  <th style={{ padding: '16px 12px', color: 'var(--inkLight)', fontWeight: 600, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>City</th>
+                  <th style={{ padding: '16px 12px', color: 'var(--inkLight)', fontWeight: 600, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Dealer Name</th>
+                  <th style={{ padding: '16px 12px', color: 'var(--inkLight)', fontWeight: 600, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</th>
+                  <th style={{ padding: '16px 12px', color: 'var(--inkLight)', fontWeight: 600, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Request Type</th>
+                  <th style={{ padding: '16px 12px', color: 'var(--inkLight)', fontWeight: 600, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {requests.map(req => (
-                  <tr key={req.id} style={{ borderBottom: `1px solid #e2e8f0` }}>
-                    <td style={{ padding: '16px 12px', fontWeight: 600 }}>{req.city || 'Unknown'}</td>
-                    <td style={{ padding: '16px 12px' }}>{req.name}</td>
-                    <td style={{ padding: '16px 12px', color: B.muted }}>{req.email}</td>
+                  <tr key={req.id} style={{ borderBottom: `1px solid var(--brd)` }}>
+                    <td style={{ padding: '16px 12px', fontWeight: 600, color: 'var(--ink)' }}>{req.city || 'Unknown'}</td>
+                    <td style={{ padding: '16px 12px', color: 'var(--ink)' }}>{req.name}</td>
+                    <td style={{ padding: '16px 12px', color: 'var(--inkLight)' }}>{req.email}</td>
                     <td style={{ padding: '16px 12px' }}>
-                      <span style={{ background: '#fef3c7', color: '#b45309', padding: '4px 12px', borderRadius: 100, fontSize: 12, fontWeight: 600 }}>
+                      <span style={{ background: 'var(--warnBg)', color: 'var(--warn)', padding: '6px 14px', borderRadius: 100, fontSize: 12, fontWeight: 700 }}>
                         Profile Edit Permission
                       </span>
                     </td>
