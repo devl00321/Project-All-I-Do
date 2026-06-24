@@ -1,4 +1,25 @@
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+
+@theme {
+  --color-mint: #5DCAA5;
+  --color-mint-dark: #3BAF8A;
+  --color-mint-deep: #085041;
+  --color-mint-light: #E1F5EE;
+  --color-mint-fog: #F4FBF8;
+  --color-teal: #1D9E75;
+  --color-ink: #0F2E25;
+  --color-ink-mid: #2D6B58;
+  --color-ink-light: #4A7A68;
+  --color-muted: #8AADA1;
+  --color-faint: #C5DDD6;
+  --color-err: #C0392B;
+  --color-err-bg: #FDECEA;
+  --color-warn: #B87A14;
+  --color-warn-bg: #FEF3DC;
+  --color-ok: #1D9E75;
+}
+
 
 :root {
   --mint: #5DCAA5;
@@ -22,6 +43,12 @@
   --warn: #B87A14;
   --warnBg: #FEF3DC;
   --ok: #1D9E75;
+
+  /* Companion responsive variables */
+  --cat-left-translate: calc(-100vw + 420px);
+  --cat-bottom: 24px;
+  --chat-hint-bottom: 128px;
+  --chat-window-bottom: 130px;
 }
 
 *, *::before, *::after { 
@@ -41,6 +68,7 @@ body {
   color: var(--ink);
   line-height: 1.6;
   font-size: 15px;
+  margin: 0;
 }
 
 ::-webkit-scrollbar { width: 6px; }
@@ -193,3 +221,755 @@ input, textarea, button, select { font-family: 'Lexend', sans-serif; font-weight
 .main-content::-webkit-scrollbar { width: 6px; }
 .main-content::-webkit-scrollbar-track { background:transparent; }
 .main-content::-webkit-scrollbar-thumb { background: var(--faint); border-radius:3px; }
+
+/* ── Tailwinds-like Utilities for Vanilla CSS ─────────────────────── */
+.grid { display: grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.gap-2 { gap: 8px; }
+.gap-4 { gap: 16px; }
+.gap-10 { gap: 40px; }
+.gap-12 { gap: 48px; }
+
+@media (min-width: 768px) {
+  .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-shrink-0 { flex-shrink: 0; }
+.flex-1 { flex: 1; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-4 { gap: 16px; }
+
+.mb-2 { margin-bottom: 8px; }
+.mb-4 { margin-bottom: 16px; }
+.mb-6 { margin-bottom: 24px; }
+.mb-8 { margin-bottom: 32px; }
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.max-w-2xl { max-width: 672px; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.text-3xl { font-size: 30px; font-weight: 700; }
+.text-2xl { font-size: 24px; }
+.text-sm { font-size: 14px; }
+.text-xs { font-size: 12px; }
+.font-bold { font-weight: 700; }
+.leading-relaxed { line-height: 1.625; }
+
+.bg-white { background-color: #fff; }
+.bg-white\/20 { background-color: rgba(255, 255, 255, 0.2); }
+.border { border: 1.5px solid transparent; }
+.border-brd { border-color: var(--brd); }
+.border-none { border-style: none; }
+.rounded-2xl { border-radius: 16px; }
+.rounded-xl { border-radius: 12px; }
+.rounded-lg { border-radius: 8px; }
+
+.p-4 { padding: 16px; }
+.p-5 { padding: 20px; }
+.p-6 { padding: 24px; }
+.pl-12 { padding-left: 48px; }
+.pr-4 { padding-right: 16px; }
+.py-2 { padding-top: 8px; padding-bottom: 8px; }
+.px-4 { padding-left: 16px; padding-right: 16px; }
+
+.text-white { color: #fff; }
+.text-white\/80 { color: rgba(255, 255, 255, 0.8); }
+.text-ink { color: var(--ink); }
+.text-ink-light { color: var(--ink-light); }
+.text-muted { color: var(--muted); }
+
+.bg-gradient-to-r {
+  background: linear-gradient(90deg, var(--mint), var(--mintDark));
+}
+.cursor-pointer { cursor: pointer; }
+.shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04); }
+.transition { transition: all 0.2s ease; }
+.duration-200 { transition-duration: 200ms; }
+.duration-150 { transition-duration: 150ms; }
+
+.category-card {
+  background: #fff; border: 1.5px solid var(--brd);
+  border-radius: 18px; padding: 20px;
+  cursor: pointer;
+  transition: border-color .18s, transform .18s, box-shadow .18s;
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px;
+}
+.category-card:hover { border-color: var(--mint); transform:translateY(-3px); box-shadow:0 8px 28px rgba(93, 202, 165, 0.12); }
+
+/* ── Ride Booking Custom Styles ────────────────────────────────── */
+.ride-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.ride-vehicle-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ride-vehicle-card:hover {
+  border-color: var(--mint) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(93, 202, 165, 0.08);
+}
+.hover-light:hover {
+  background-color: rgba(93, 202, 165, 0.1) !important;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ── Leaflet Map Layout & Style Overrides ────────────────────────── */
+.leaflet-container {
+  font-family: 'Lexend', sans-serif !important;
+  font-weight: 600;
+  border-radius: 18px;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(15, 46, 37, 0.12) !important;
+  border: 1.5px solid var(--brd);
+  padding: 2px;
+}
+.leaflet-popup-content {
+  font-size: 12px !important;
+  color: var(--ink) !important;
+  margin: 10px 14px !important;
+}
+.leaflet-popup-tip {
+  background: white !important;
+  border: 1px solid var(--brd);
+}
+
+/* Clear Leaflet default styling for custom divIcons */
+.custom-map-pin, 
+.custom-map-pin-user, 
+.custom-map-pin-drop, 
+.custom-map-pin-partner,
+.tracking-vehicle-pin {
+  background: transparent !important;
+  border: none !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Suggestion Autocomplete Dropdown Styles ─────────────────────── */
+.suggestion-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50px;
+  background: #ffffff;
+  border: 1.5px solid var(--brd);
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(15, 46, 37, 0.08);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.suggestion-item {
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: var(--inkLight);
+  cursor: pointer;
+  border-bottom: 1px solid var(--bg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.suggestion-item:hover {
+  background: var(--mintLight);
+  color: var(--mintDark);
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+/* ── Persian Cat Companion Styles ───────────────────────────────── */
+.cat-companion-container {
+  position: fixed;
+  bottom: var(--cat-bottom);
+  right: 24px;
+  width: 96px;
+  height: 96px;
+  z-index: 9999;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
+}
+
+/* Splash Overlay styling */
+.cat-splash-overlay {
+  position: fixed;
+  inset: 0;
+  background: #F4FBF8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+.cat-splash-cat-box {
+  width: 220px;
+  height: 220px;
+  margin-bottom: 20px;
+}
+
+/* Top Peeking container (shifted right to avoid page headlines overlap) */
+.cat-peeking-top {
+  position: fixed;
+  top: 0;
+  right: 80px;
+  width: 110px;
+  height: 110px;
+  z-index: 9999;
+  transform: translateY(-100%);
+  animation: catPeekDown 3.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes catPeekDown {
+  0% { transform: translateY(-100%); }
+  15% { transform: translateY(-18px); } /* slide down */
+  28% { transform: translateY(-18px) rotate(-8deg); }
+  40% { transform: translateY(-18px) rotate(8deg); }
+  52% { transform: translateY(-18px) rotate(0deg); }
+  85% { transform: translateY(-18px); }
+  100% { transform: translateY(-100%); } /* slide back up */
+}
+
+/* Cat elements animation */
+.cat-ear-left {
+  transform-origin: 75px 65px;
+  animation: earTwitchLeft 4s ease-in-out infinite;
+}
+.cat-ear-right {
+  transform-origin: 125px 65px;
+  animation: earTwitchRight 4.5s ease-in-out infinite;
+}
+.cat-tail {
+  transform-origin: 100px 135px;
+  animation: tailWag 2.2s ease-in-out infinite;
+}
+.cat-paw-right-wave {
+  transform-origin: 125px 120px;
+  animation: pawWave 1s ease-in-out infinite;
+}
+.cat-paw-left-play {
+  transform-origin: 75px 120px;
+  animation: pawPlay 0.7s ease-in-out infinite;
+}
+.cat-paw-right-play {
+  transform-origin: 125px 120px;
+  animation: pawPlayRight 0.7s ease-in-out infinite alternate;
+}
+
+/* Emotion modifiers */
+.cat-happy {
+  animation: catHappyBounce 0.5s ease-in-out infinite alternate;
+}
+.cat-sad-breath {
+  animation: catSadSigh 1.8s ease-in-out infinite;
+}
+
+/* Toy transformations */
+.cat-toy-wrench {
+  transform-origin: 100px 120px;
+  animation: wrenchSpin 1.6s linear infinite;
+}
+.cat-toy-wire {
+  transform-origin: 100px 120px;
+  animation: wireSpark 0.4s ease-in-out infinite alternate;
+}
+.cat-toy-car {
+  transform-origin: center;
+  animation: carRoll 1.8s ease-in-out infinite;
+}
+.cat-toy-generic {
+  transform-origin: center;
+  animation: genericFloat 1.8s ease-in-out infinite alternate;
+}
+
+/* Keyframes */
+@keyframes earTwitchLeft {
+  0%, 90%, 100% { transform: rotate(0deg); }
+  93% { transform: rotate(-8deg); }
+  96% { transform: rotate(4deg); }
+}
+@keyframes earTwitchRight {
+  0%, 88%, 100% { transform: rotate(0deg); }
+  91% { transform: rotate(8deg); }
+  94% { transform: rotate(-4deg); }
+}
+@keyframes tailWag {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(20deg); }
+}
+@keyframes pawWave {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-28deg); }
+}
+@keyframes pawPlay {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(10deg); }
+}
+@keyframes pawPlayRight {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-4px) rotate(-10deg); }
+}
+@keyframes catHappyBounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-12px); }
+}
+@keyframes catSadSigh {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.95) translateY(2px); opacity: 0.85; }
+}
+@keyframes wrenchSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes wireSpark {
+  0% { opacity: 0.6; transform: scale(0.93); }
+  100% { opacity: 1; transform: scale(1.07); }
+}
+@keyframes carRoll {
+  0%, 100% { transform: translateX(-4px); }
+  50% { transform: translateX(12px); }
+}
+@keyframes genericFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-6px); }
+}
+/* ── Additional Kitten animations (Collar, Bell, Foliage Sway) ───── */
+.cat-collar-bell {
+  transform-origin: 100px 113px;
+  animation: bellWiggle 2s ease-in-out infinite alternate;
+}
+@keyframes bellWiggle {
+  0% { transform: rotate(-8deg); }
+  100% { transform: rotate(8deg); }
+}
+
+.cat-bushes {
+  transform-origin: 100px 160px;
+  animation: bushSway 4s ease-in-out infinite alternate;
+}
+@keyframes bushSway {
+  0% { transform: scale(1) rotate(-1deg); }
+  100% { transform: scale(1.03) rotate(1deg); }
+}
+
+/* ── Kitten Chatbot UI Styles ────────────────────────────────────── */
+.puffy-chat-window {
+  position: fixed;
+  bottom: var(--chat-window-bottom);
+  right: 24px;
+  width: 340px;
+  height: 420px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid var(--brd);
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(15, 46, 37, 0.15);
+  overflow: hidden;
+  font-family: 'Lexend', sans-serif;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.puffy-chat-header {
+  background: linear-gradient(135deg, var(--mintDark), var(--mintDeep));
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.puffy-chat-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.puffy-chat-online-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2ECC71;
+  box-shadow: 0 0 6px #2ECC71;
+}
+
+.puffy-chat-close-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+}
+.puffy-chat-close-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.puffy-chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background: #F4FBF8;
+  display: flex;
+  flex-direction: column;
+}
+
+.puffy-msg-bubble {
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 12.5px;
+  max-width: 85%;
+  line-height: 1.5;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+.puffy-msg-bubble.puffy {
+  background: #ffffff;
+  color: var(--ink);
+  border: 1.5px solid var(--brd);
+  border-bottom-left-radius: 3px;
+  align-self: flex-start;
+  text-align: left;
+}
+.puffy-msg-bubble.user {
+  background: var(--mint);
+  color: #ffffff;
+  border-bottom-right-radius: 3px;
+  align-self: flex-end;
+  text-align: left;
+}
+
+.puffy-msg-time {
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 4px;
+  text-align: right;
+}
+.puffy-msg-bubble.user .puffy-msg-time {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.puffy-chat-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 14px;
+  background: #ffffff;
+  border-top: 1.5px solid var(--brd);
+  border-bottom: 1.5px solid var(--brd);
+  scrollbar-width: none;
+}
+.puffy-chat-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.puffy-chat-chip-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 100px;
+  border: 1.2px solid var(--brdMid);
+  background: var(--bg);
+  color: var(--inkLight);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease-in-out;
+}
+.puffy-chat-chip-btn:hover {
+  background: var(--mintLight);
+  border-color: var(--mint);
+  color: var(--mintDark);
+  transform: translateY(-1px);
+}
+
+.puffy-chat-input-bar {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: #ffffff;
+  gap: 10px;
+}
+
+.puffy-chat-input-field {
+  flex: 1;
+  border: 1.5px solid var(--brd);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.puffy-chat-input-field:focus {
+  border-color: var(--mint);
+}
+
+.puffy-chat-send-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--mint);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.1s;
+}
+.puffy-chat-send-btn:hover {
+  background: var(--mintDark);
+  transform: scale(1.05);
+}
+.puffy-chat-send-btn:active {
+  transform: scale(0.95);
+}
+
+/* Floating chat trigger helper bubble above the cat */
+.puffy-chat-bubble-hint {
+  position: fixed;
+  bottom: var(--chat-hint-bottom);
+  right: 28px;
+  background: #ffffff;
+  border: 1.5px solid var(--brd);
+  border-radius: 14px;
+  padding: 8px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink);
+  box-shadow: 0 6px 20px rgba(15, 46, 37, 0.08);
+  animation: floatBubble 2s ease-in-out infinite alternate;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 9998;
+  white-space: nowrap;
+}
+.puffy-chat-bubble-hint::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  right: 24px;
+  width: 0;
+  height: 0;
+  border-width: 8px 8px 0;
+  border-style: solid;
+  border-color: #ffffff transparent transparent;
+}
+.puffy-chat-bubble-hint::before {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  right: 23px;
+  width: 0;
+  height: 0;
+  border-width: 9px 9px 0;
+  border-style: solid;
+  border-color: var(--brd) transparent transparent;
+  z-index: -1;
+}
+
+@keyframes floatBubble {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-5px); }
+}
+
+.booking-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 28px;
+  align-items: start;
+}
+.ride-booking-layout {
+  display: grid;
+  grid-template-columns: 430px 1fr;
+  gap: 24px;
+  height: calc(100vh - 120px);
+}
+.live-tracking-layout {
+  display: grid;
+  grid-template-columns: 430px 1fr;
+  gap: 24px;
+  height: calc(100vh - 120px);
+}
+.app-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* ── Responsive Mobile Styles for Smart Phones (Android / iOS) ────── */
+@media (max-width: 767px) {
+  /* Sidebar as bottom navigation bar */
+  .sidebar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    height: 64px !important;
+    flex-direction: row !important;
+    border-right: none !important;
+    border-top: 1.5px solid var(--brd) !important;
+    z-index: 10000 !important;
+    padding: 0 !important;
+    overflow-y: hidden !important;
+    box-shadow: 0 -4px 16px rgba(15, 46, 37, 0.05);
+  }
+  .sidebar .logo-area,
+  .sidebar .location-pill,
+  .sidebar .footer-area {
+    display: none !important;
+  }
+  .sidebar nav {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-around !important;
+    width: 100% !important;
+    padding: 0 !important;
+    height: 100% !important;
+    align-items: center !important;
+  }
+  .sidebar .nav-link {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 4px 0 !important;
+    margin: 0 !important;
+    width: auto !important;
+    font-size: 9px !important;
+    gap: 2px !important;
+    flex: 1 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    height: 100% !important;
+  }
+  .sidebar .nav-link .icon {
+    font-size: 16px !important;
+    margin: 0 !important;
+    width: auto !important;
+  }
+  .sidebar .nav-link.active {
+    color: var(--mint) !important;
+    border-top: 3.5px solid var(--mint) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  /* Main flex direction column for mobile viewport */
+  .app-container {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 100vh !important;
+  }
+
+  /* Content area adjustment */
+  .main-content {
+    width: 100% !important;
+    height: auto !important;
+    min-height: calc(100vh - 64px) !important;
+    padding-bottom: 96px !important; /* Space for Puffy and navigation bar */
+  }
+
+  .page {
+    padding: 20px 16px 80px !important; /* Minimal margins for cards */
+  }
+
+  /* Responsive styling variables */
+  :root {
+    --cat-left-translate: calc(-100vw + 144px);
+    --cat-bottom: 88px; /* sits 24px above the 64px bottom nav bar */
+    --chat-hint-bottom: 192px;
+    --chat-window-bottom: 194px;
+  }
+
+  /* Adjust Chatbot Window sizing for smartphone screens */
+  .puffy-chat-window {
+    width: calc(100% - 48px) !important;
+    right: 24px !important;
+    left: 24px !important;
+    height: 380px !important;
+  }
+
+  /* Responsive layout grids */
+  .booking-layout-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  .booking-layout-grid .bk-sidebar {
+    position: static !important;
+    width: 100% !important;
+  }
+
+  /* Ride Booking and Live Tracking layouts order shifts */
+  .ride-booking-layout,
+  .live-tracking-layout {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+    height: auto !important;
+    gap: 16px !important;
+  }
+  .ride-booking-layout > :nth-child(1),
+  .live-tracking-layout > :nth-child(1) { /* Left panel details */
+    order: 2 !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+  .ride-booking-layout > :nth-child(2),
+  .live-tracking-layout > :nth-child(2) { /* Right panel map */
+    order: 1 !important;
+    height: 280px !important;
+    width: 100% !important;
+  }
+}

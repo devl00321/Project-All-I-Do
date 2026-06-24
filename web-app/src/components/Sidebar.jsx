@@ -9,10 +9,10 @@ export function Sidebar({ tab, onTab, hasActive }) {
   useEffect(() => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline();
-      tl.from(".logo-area", { x: -20, opacity: 0, duration: 0.4, ease: "power2.out" })
-        .from(".location-pill", { x: -20, opacity: 0, duration: 0.3, ease: "power2.out" }, "-=0.2")
-        .from(".nav-link", { x: -15, opacity: 0, duration: 0.3, stagger: 0.05, ease: "power2.out" }, "-=0.1")
-        .from(".footer-area", { opacity: 0, duration: 0.3 }, "-=0.1");
+      tl.fromTo(".logo-area", { x: -20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: "power2.out" })
+        .fromTo(".location-pill", { x: -20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, "-=0.2")
+        .fromTo(".nav-link", { x: -15, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, stagger: 0.05, ease: "power2.out" }, "-=0.1")
+        .fromTo(".footer-area", { opacity: 0 }, { opacity: 1, duration: 0.3 }, "-=0.1");
     }, sidebarRef);
     return () => ctx.revert();
   }, []);
@@ -35,7 +35,6 @@ export function Sidebar({ tab, onTab, hasActive }) {
           <div style={{ fontFamily:"'Lexend',sans-serif", fontSize:22, fontWeight:600, color:B.ink, letterSpacing:-.5 }}>
             All<span style={{ color: B.mint }}>i</span>Do
           </div>
-          <div style={{ color:B.muted, fontSize:11 }}>Customer Portal</div>
         </div>
       </div>
 
