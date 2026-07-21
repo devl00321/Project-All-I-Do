@@ -1,3 +1,6 @@
+// Enable TypeScript file support via tsx — must be the VERY FIRST require
+require('tsx/cjs');
+
 const express = require('express');
 const http = require('http');
 const path = require('path');
@@ -30,6 +33,10 @@ app.use((req, res, next) => {
 
 const apiRoutes = require('./routes/api');
 app.use('/api', apiRoutes);
+
+// ── Auth routes (Drizzle + Neon + Redis OTP flow) ────────────────
+const { authRouter } = require('./src/auth/router.ts');
+app.use('/auth', authRouter);
 
 const Razorpay = require('razorpay');
 
