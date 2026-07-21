@@ -137,7 +137,7 @@ export default function CustomerApp() {
   }
 
   return (
-    <div className="app-container">
+    <div className="app-container flex h-screen w-full overflow-hidden bg-[var(--bg)]">
       {/* Splash overlay */}
       {showSplash && (
         <div className="cat-splash-overlay">

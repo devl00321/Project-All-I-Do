@@ -41,23 +41,23 @@ export default function HqAuth() {
         <form onSubmit={handleLogin}>
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: B.ink, marginBottom: 8 }}>HQ Email</label>
-            <input 
-              type="email" 
-              className="fi" 
+            <input
+              type="email"
+              className="fi"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required 
+              required
               style={{ width: '100%' }}
             />
           </div>
           <div style={{ marginBottom: 24 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: B.ink, marginBottom: 8 }}>Password</label>
-            <input 
-              type="password" 
-              className="fi" 
+            <input
+              type="password"
+              className="fi"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required 
+              required
               style={{ width: '100%' }}
             />
           </div>
