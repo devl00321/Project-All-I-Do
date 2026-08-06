@@ -22,6 +22,7 @@ interface Msg91Response {
 export class Msg91SmsProvider implements SmsProvider {
   private readonly authKey: string;
   private readonly templateId: string;
+  private readonly senderId?: string;
 
   constructor() {
     const authKey = process.env.MSG91_AUTH_KEY;
@@ -36,6 +37,7 @@ export class Msg91SmsProvider implements SmsProvider {
 
     this.authKey = authKey;
     this.templateId = templateId;
+    this.senderId = process.env.MSG91_SENDER_ID;
   }
 
   async sendOtp(phone: string, otp: string): Promise<void> {
@@ -48,6 +50,7 @@ export class Msg91SmsProvider implements SmsProvider {
       otp,
       otp_length: 6,
       otp_expiry: 5,  // minutes — shown in the SMS template
+      ...(this.senderId ? { sender: this.senderId } : {}),
     });
 
     let response: Response;

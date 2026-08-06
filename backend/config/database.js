@@ -1,5 +1,4 @@
 const { Sequelize } = require('sequelize');
-require('dotenv').config({ path: '../.env' }); // Load from root .env
 
 // Connect using the connection string from environment variables
 const sequelize = new Sequelize(process.env.SUPABASE_DB_URL, {

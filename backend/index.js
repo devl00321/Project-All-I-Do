@@ -6,7 +6,6 @@ const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
 const cors = require('cors');
-require('dotenv').config({ path: '../.env' }); // Load from root .env
 const db = require('./models');
 const sequelize = require('./config/database');
 const { requireAuth } = require('./middleware/auth');
