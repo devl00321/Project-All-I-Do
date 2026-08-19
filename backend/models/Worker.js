@@ -25,6 +25,19 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.FLOAT,
       allowNull: true,
     },
+    dealerId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Users',
+        key: 'id'
+      }
+    },
+    rating: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      defaultValue: 0
+    }
   }, {
     timestamps: true,
   });

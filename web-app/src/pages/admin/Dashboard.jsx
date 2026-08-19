@@ -148,7 +148,7 @@ export default function Dashboard() {
             
             {dropdownOpen && (
               <div style={{ 
-                position: 'absolute', top: '56px', right: 0, width: '220px', background: '#fff', 
+                position: 'absolute', top: '56px', right: 0, width: '220px', background: 'var(--surface)', 
                 borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: `1px solid ${B.brd}`,
                 overflow: 'hidden', zIndex: 50
               }}>

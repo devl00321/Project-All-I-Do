@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Upload, X } from 'lucide-react';
+import { Camera, Upload, X, Eye, EyeOff } from 'lucide-react';
 import { B } from '../../constants';
 import { Spinner } from '../../components/Common';
 import api from '../../utils/api';
@@ -10,6 +10,7 @@ export default function AdminRegister() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // Form Data
   const [formData, setFormData] = useState({
@@ -30,10 +31,12 @@ export default function AdminRegister() {
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        setCameraActive(true);
-      }
+      setCameraActive(true);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      }, 50);
     } catch (err) {
       alert("Camera access denied or unavailable.");
     }
@@ -79,7 +82,7 @@ export default function AdminRegister() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       alert("Registration successful! HQ will review your profile. You can now login.");
-      navigate('/admin');
+      navigate('/admin/login');
     } catch (err) {
       setError("Registration failed. Please try again.");
       console.error(err);
@@ -110,7 +113,27 @@ export default function AdminRegister() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <input type="text" className="fi" placeholder="Full Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
               <input type="email" className="fi" placeholder="Business Email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-              <input type="password" className="fi" placeholder="Create Password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  className="fi" 
+                  placeholder="Create Password" 
+                  value={formData.password} 
+                  onChange={e => setFormData({...formData, password: e.target.value})} 
+                  style={{ paddingRight: '40px', width: '100%', boxSizing: 'border-box' }}
+                />
+                <button 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ 
+                    position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', 
+                    background: 'none', border: 'none', cursor: 'pointer', color: B.muted,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0
+                  }}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
               <input type="text" className="fi" placeholder="Operating City (e.g. Suri)" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
               <button className="pbtn" onClick={() => setStep(2)}>Next Step</button>
               <div style={{ textAlign: 'center', fontSize: 13, marginTop: 16 }}>

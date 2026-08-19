@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, Navigation, Bike, Car, Compass, Phone, Shield, Star, ArrowLeft, CreditCard, DollarSign, Loader2, Search } from 'lucide-react';
+import { MapPin, Navigation, Bike, Car, Compass, Phone, Shield, Star, ArrowLeft, CreditCard, DollarSign, Loader2, Search, User } from 'lucide-react';
 import { B } from '../../constants';
 import gsap from 'gsap';
 
-export default function RideBooking({ service, onConfirm, onBack, setCatState }) {
+export default function RideBooking({ service, onConfirm, onBack, setCatState, isLoggedIn, onRequireAuth }) {
   const [pickupText, setPickupText] = useState("Detecting GPS Location...");
   const [pickupQuery, setPickupQuery] = useState("");
   const [pickupCoords, setPickupCoords] = useState(null);
@@ -270,7 +270,7 @@ export default function RideBooking({ service, onConfirm, onBack, setCatState })
     if (bookingState === 'tracked' && window.L && mapInstanceRef.current && routeGeometry.length > 0) {
       const vIcon = window.L.divIcon({
         className: 'tracking-vehicle-pin',
-        html: `<div style="background:#1E293B;color:#fff;width:32px;height:32px;border-radius:50%;border:2px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-size:14px">🚗</div>`
+        html: `<div style="background:#1E293B;color:#fff;width:32px;height:32px;border-radius:50%;border:2px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></div>`
       });
 
       const trackingMarker = window.L.marker(routeGeometry[0], { icon: vIcon }).addTo(mapInstanceRef.current);
@@ -411,8 +411,10 @@ export default function RideBooking({ service, onConfirm, onBack, setCatState })
                         key={item.place_id} 
                         onClick={() => selectPickupSuggestion(item)}
                         className="suggestion-item"
+                        style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
                       >
-                        📍 {item.display_name}
+                        <MapPin size={14} color={B.mint} style={{ flexShrink: 0 }} />
+                        <span>{item.display_name}</span>
                       </div>
                     ))}
                   </div>
@@ -440,8 +442,10 @@ export default function RideBooking({ service, onConfirm, onBack, setCatState })
                         key={item.place_id} 
                         onClick={() => selectDropSuggestion(item)}
                         className="suggestion-item"
+                        style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
                       >
-                        🚩 {item.display_name}
+                        <MapPin size={14} color={B.err} style={{ flexShrink: 0 }} />
+                        <span>{item.display_name}</span>
                       </div>
                     ))}
                   </div>
@@ -501,7 +505,7 @@ export default function RideBooking({ service, onConfirm, onBack, setCatState })
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 700, fontSize: '16px', color: B.ink }}>₹{distance > 0 ? fare : v.base}</div>
-                      <div style={{ fontSize: '10px', color: B.muted }}>👤 {v.cap}</div>
+                      <div style={{ fontSize: '10px', color: B.muted, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}><User size={10} /> {v.cap}</div>
                     </div>
                   </div>
                 );
@@ -553,7 +557,13 @@ export default function RideBooking({ service, onConfirm, onBack, setCatState })
 
             {/* Book button */}
             <button 
-              onClick={handleBookRide}
+              onClick={() => {
+                if (!isLoggedIn) {
+                  onRequireAuth();
+                } else {
+                  handleBookRide();
+                }
+              }}
               className="pbtn" 
               style={{ width: '100%', padding: '15px', borderRadius: '14px', fontSize: '15px' }}
             >
@@ -591,8 +601,8 @@ export default function RideBooking({ service, onConfirm, onBack, setCatState })
             {/* Driver Profile */}
             <div style={{ padding: '16px', border: `1.5px solid ${B.brd}`, borderRadius: '16px', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: B.bg, border: `1px solid ${B.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-                  👨🏽‍✈️
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: B.bg, border: `1px solid ${B.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: B.ink }}>
+                  <User size={24} />
                 </div>
                 <div style={{ flex: 1, textAlign: 'left' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -677,7 +687,7 @@ export default function RideBooking({ service, onConfirm, onBack, setCatState })
         <div ref={mapContainerRef} style={{ width: '100%', height: '100%', zIndex: 1 }}></div>
 
         {/* Location Safety Shield Badge */}
-        <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: '#fff', border: `1.5px solid ${B.brd}`, borderRadius: '12px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)', zIndex: 10 }}>
+        <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'var(--surface)', border: `1.5px solid ${B.brd}`, borderRadius: '12px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)', zIndex: 10 }}>
           <Shield size={16} color={B.mint} />
           <span style={{ fontSize: '11px', fontWeight: 700, color: B.ink }}>ALLIDO Safety Shield Active</span>
         </div>

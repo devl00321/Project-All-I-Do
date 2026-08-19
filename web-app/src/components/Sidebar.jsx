@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { Home, Wrench, PlusSquare, FileText, MapPin, User, LogOut } from 'lucide-react';
+import { Home, Wrench, PlusSquare, FileText, MapPin, User, LogOut, Moon, Sun } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
-export function Sidebar({ tab, onTab, hasActive, userName = "John Doe", onLogout }) {
+export function Sidebar({ tab, onTab, hasActive, userName = "User", onLogout, isOpen, onClose }) {
   const sidebarRef = useRef(null);
+  const { isDark, setIsDark } = useTheme();
   
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -18,14 +20,13 @@ export function Sidebar({ tab, onTab, hasActive, userName = "John Doe", onLogout
 
   const links = [
     { id: "home",     icon: <Home size={18} />, label: "Overview" },
-    { id: "services", icon: <Wrench size={18} />, label: "Services" },
-    { id: "book",     icon: <PlusSquare size={18} />, label: "New Booking" },
     { id: "bookings", icon: <FileText size={18} />, label: "My Bookings" },
     { id: "track",    icon: <MapPin size={18} />, label: "Live Track" },
     { id: "profile",  icon: <User size={18} />, label: "Profile" },
   ];
 
   return (
+    <>
     <aside className="customer-sidebar" ref={sidebarRef}>
       <div className="sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '24px 20px', borderBottom: '1px solid var(--brd)' }}>
         <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, var(--mint), var(--mintDeep))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', boxShadow: '0 4px 10px rgba(93,202,165,.35)' }}>
@@ -54,7 +55,15 @@ export function Sidebar({ tab, onTab, hasActive, userName = "John Doe", onLogout
         ))}
       </nav>
 
-      <div className="sidebar-footer" style={{ padding: '20px', borderTop: '1px solid var(--brd)' }}>
+      <div className="sidebar-footer" style={{ padding: '20px', borderTop: '1px solid var(--brd)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <button 
+          onClick={() => setIsDark(!isDark)}
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '12px', background: 'transparent', border: '1.5px solid var(--brd)', cursor: 'pointer', color: 'var(--ink)' }}
+        >
+          {isDark ? <Sun size={16} /> : <Moon size={16} />}
+          <span style={{ fontSize: '13px', fontWeight: '600' }}>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+        </button>
+
         <div 
           onClick={onLogout || (() => onTab('profile'))}
           style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '12px', borderRadius: '12px', transition: 'background 0.2s', background: 'var(--bg)' }}
@@ -70,5 +79,7 @@ export function Sidebar({ tab, onTab, hasActive, userName = "John Doe", onLogout
         </div>
       </div>
     </aside>
+    {isOpen && <div className={`sidebar-overlay ${isOpen ? 'open' : ''}`} onClick={onClose} />}
+    </>
   );
 }

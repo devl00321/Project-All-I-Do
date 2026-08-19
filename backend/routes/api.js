@@ -11,82 +11,83 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
+// Memory stores removed in favor of DB
+
 // Multer storage config
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadDir)
   },
+
   filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname)
   }
 });
 const upload = multer({ storage: storage });
 
-// Helper to simulate the booking lifecycle
-const simulateMovement = (workerId, bookingId, io) => {
-  const startLat = 23.9054;
-  const startLng = 87.5276;
-  const endLat = 23.9100;
-  const endLng = 87.5200;
-  
-  const totalSteps = 50; 
-  const intervalTime = 100; // 5 seconds total
-  let stepCount = 0;
+// Simulation logic for worker movement and booking progress
+async function simulateMovement(workerId, bookingId, io) {
+  try {
+    const worker = await db.Worker.findByPk(workerId);
+    if (!worker) return;
 
-  const interval = setInterval(async () => {
-    stepCount++;
-    const progress = stepCount / totalSteps;
-    const currentLat = startLat + (endLat - startLat) * progress;
-    const currentLng = startLng + (endLng - startLng) * progress;
-    
-    if (io) {
-      io.to(`booking_${bookingId}`).emit('location-updated', { lat: currentLat, lng: currentLng });
-      io.to('booking_admin_room').emit('location-updated', { workerId, lat: currentLat, lng: currentLng });
-    }
-    
-    // Update DB occasionally to avoid overwhelming, or just update every time for local test
-    await db.Worker.update({ current_lat: currentLat, current_lng: currentLng }, { where: { id: workerId } });
+    let lat = parseFloat(worker.current_lat) || 28.6139;
+    let lng = parseFloat(worker.current_lng) || 77.2090;
 
-    if (stepCount >= totalSteps) {
-      clearInterval(interval);
-    }
-  }, intervalTime);
-};
+    let steps = 10;
+    let currentStep = 0;
+    const interval = setInterval(async () => {
+      if (currentStep >= steps) {
+        clearInterval(interval);
+        return;
+      }
+      
+      lat += 0.002;
+      lng += 0.002;
 
-const simulateBookingProgress = (bookingId, workerId, io) => {
+      await db.Worker.update({ current_lat: lat, current_lng: lng }, { where: { id: workerId } });
+      
+      if (io) {
+        io.to(`booking_${bookingId}`).emit('location-updated', { workerId, lat, lng });
+        io.emit('worker-location-changed', { workerId, lat, lng });
+      }
+
+      currentStep++;
+    }, 1000);
+  } catch (err) {
+    console.error("Simulation movement error:", err);
+  }
+}
+
+async function simulateBookingProgress(bookingId, workerId, io) {
   const steps = [
     { status: 'EN_ROUTE', delay: 2000 },
-    { status: 'IN_PROGRESS', delay: 7000 },
-    { status: 'COMPLETED', delay: 12000 }
+    { status: 'IN_PROGRESS', delay: 12000 },
+    { status: 'COMPLETED', delay: 20000 }
   ];
 
-  steps.forEach(step => {
+  let cumulativeDelay = 0;
+  for (const step of steps) {
+    cumulativeDelay += step.delay;
     setTimeout(async () => {
       try {
-        const booking = await db.Booking.findByPk(bookingId);
-        if (booking && booking.status !== 'CANCELLED') {
-          booking.status = step.status;
-          await booking.save();
-          
-          if (io) {
-            io.to(`booking_${bookingId}`).emit('booking-status-changed', { status: step.status });
-            io.to('booking_admin_room').emit('booking-status-changed', { type: 'refresh' });
-          }
-          
-          if (step.status === 'EN_ROUTE') {
-            simulateMovement(workerId, bookingId, io);
-          }
-          
-          if (step.status === 'COMPLETED') {
-            await db.Worker.update({ status: 'AVAILABLE' }, { where: { id: workerId } });
-          }
+        await db.Booking.update({ status: step.status }, { where: { id: bookingId } });
+        if (step.status === 'COMPLETED') {
+           await db.Worker.update({ status: 'AVAILABLE' }, { where: { id: workerId } });
+        }
+        if (io) {
+          io.to(`booking_${bookingId}`).emit('booking-status-changed', { status: step.status });
+          io.to('booking_admin_room').emit('booking-status-changed', { type: 'refresh' });
         }
       } catch (err) {
-        console.error("Simulation error:", err);
+        console.error("Simulation progress error:", err);
       }
-    }, step.delay);
-  });
-};
+    }, cumulativeDelay);
+  }
+
+  // Trigger movement simulation immediately
+  simulateMovement(workerId, bookingId, io);
+}
 
 // GET /api/workers/active - Fetch active workers for dealer map
 router.get('/workers/active', async (req, res) => {
@@ -125,9 +126,64 @@ router.get('/users', async (req, res) => {
   }
 });
 
-// --- AUTH & PROFILE ROUTES ---
 
-// POST /api/dealer/register
+// --- AUTH & PROFILE ROUTES ---
+const jwt = require('jsonwebtoken');
+
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+};
+
+// Customer Register
+router.post('/customer/register', async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    const userExists = await db.User.findOne({ where: { email } });
+    if (userExists) return res.status(400).json({ error: 'User already exists' });
+    
+    const user = await db.User.create({
+      name, email, password, role: 'CUSTOMER', status: 'APPROVED'
+    });
+    
+    res.status(201).json({
+      token: generateToken(user.id),
+      user
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+// Customer Login
+router.post('/customer/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await db.User.findOne({ where: { email, role: 'CUSTOMER' } });
+    if (user && (await user.matchPassword(password))) {
+      res.json({ token: generateToken(user.id), user });
+    } else {
+      res.status(401).json({ error: 'Invalid email or password' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// GET /api/customer/me
+router.get('/customer/me', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'No token' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await db.User.findByPk(decoded.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// Dealer Register
 router.post('/dealer/register', upload.fields([
   { name: 'face_photo', maxCount: 1 },
   { name: 'aadhaar_photo', maxCount: 1 },
@@ -144,37 +200,257 @@ router.post('/dealer/register', upload.fields([
       name, email, password, city, aadhaar_id, pan_id, voter_id,
       face_photo_url, aadhaar_photo_url, pan_photo_url,
       role: 'DEALER',
-      edit_permission_status: 'NONE'
+      edit_permission_status: 'NONE',
+      status: 'PENDING'
     });
 
-    res.status(201).json({ message: "Registered successfully", user });
+    res.status(201).json({ message: "Registered successfully! Waiting for HQ approval.", user });
   } catch (error) {
     console.error("Error registering dealer:", error);
     res.status(500).json({ error: "Could not register dealer" });
   }
 });
 
-// POST /api/dealer/login
+// Dealer Login
 router.post('/dealer/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await db.User.findOne({ where: { email, password, role: 'DEALER' } });
-    
-    if (user) {
-      res.json({ token: user.id, user }); // Basic dummy token
+    const user = await db.User.findOne({ where: { email, role: 'DEALER' } });
+    if (user && (await user.matchPassword(password))) {
+      if (user.status !== 'APPROVED') {
+        return res.status(401).json({ error: 'Account pending HQ approval or rejected' });
+      }
+      res.json({ token: generateToken(user.id), user });
     } else {
-      res.status(401).json({ error: "Invalid credentials" });
+      res.status(401).json({ error: 'Invalid credentials' });
     }
   } catch (error) {
     res.status(500).json({ error: "Login failed" });
   }
 });
 
+// HQ Login
+router.post('/hq/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    let hq = await db.User.findOne({ where: { email, role: 'HQ' } });
+    
+    // Auto-create HQ if it doesn't exist to prevent login lockouts in fresh DBs
+    if (!hq && email === 'hq@allido.com' && password === 'hq123') {
+      hq = await db.User.create({
+        name: 'Headquarters',
+        email: 'hq@allido.com',
+        role: 'HQ',
+        password: 'hq123',
+        status: 'APPROVED'
+      });
+    }
+
+    let valid = false;
+    if (hq) {
+      valid = await hq.matchPassword(password);
+      if (!valid && hq.password === password) { 
+        // Fallback for unhashed seeded users
+        valid = true;
+        // Hash it for next time
+        hq.password = password; 
+        await hq.save();
+      }
+    }
+    
+    if (valid) {
+      res.json({ token: generateToken(hq.id), user: hq });
+    } else {
+      res.status(401).json({ error: "Invalid credentials" });
+    }
+  } catch (error) {
+    console.error("HQ login error:", error);
+    res.status(500).json({ error: "Login failed" });
+  }
+});
+
+// GET /api/hq/dealers
+router.get('/hq/dealers', async (req, res) => {
+  try {
+    const dealers = await db.User.findAll({
+      where: { role: 'DEALER' },
+      include: [
+        { model: db.Worker, as: 'workers' },
+        { model: db.Booking, as: 'dealerBookings' }
+      ]
+    });
+
+    const enrichedDealers = dealers.map(dealer => {
+      const d = dealer.toJSON();
+      d.totalWorkers = d.workers ? d.workers.length : 0;
+      d.totalBookings = d.dealerBookings ? d.dealerBookings.length : 0;
+      d.totalRevenue = d.dealerBookings ? d.dealerBookings.reduce((sum, b) => sum + (parseFloat(b.total_amount) || 0), 0) : 0;
+      
+      const ratedBookings = d.dealerBookings ? d.dealerBookings.filter(b => b.rating > 0) : [];
+      d.overallRating = ratedBookings.length > 0 
+        ? (ratedBookings.reduce((sum, b) => sum + b.rating, 0) / ratedBookings.length).toFixed(1) 
+        : 0;
+
+      const uniqueCustomers = new Set();
+      if (d.dealerBookings) {
+        d.dealerBookings.forEach(b => {
+          if (b.userId) uniqueCustomers.add(b.userId);
+        });
+      }
+      d.totalCustomers = uniqueCustomers.size;
+
+      delete d.workers;
+      delete d.dealerBookings;
+      delete d.password; // Secure
+      return d;
+    });
+
+    res.json(enrichedDealers);
+  } catch (error) {
+    console.error("Fetch dealers error:", error);
+    res.status(500).json({ error: 'Failed to fetch dealers' });
+  }
+});
+
+// PUT /api/hq/dealers/:id
+router.put('/hq/dealers/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, password, city, status } = req.body;
+    
+    const user = await db.User.findByPk(id);
+    if (!user) return res.status(404).json({ error: "Dealer not found" });
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (password) user.password = password; // Will be hashed by beforeUpdate hook
+    if (city) user.city = city;
+    if (status) user.status = status;
+
+    await user.save();
+    
+    const safeUser = user.toJSON();
+    delete safeUser.password;
+    res.json({ message: "Dealer updated successfully", user: safeUser });
+  } catch (error) {
+    console.error("Update dealer error:", error);
+    res.status(500).json({ error: 'Failed to update dealer' });
+  }
+});
+
+// GET /api/hq/dealers/:id/analytics
+router.get('/hq/dealers/:id/analytics', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Fetch all bookings for the dealer to aggregate revenue and services
+    const bookings = await db.Booking.findAll({
+      where: { dealerId: id }
+    });
+
+    // 1. Service Data (count by service type)
+    const serviceCounts = {};
+    bookings.forEach(b => {
+      const s = b.service || 'Unknown';
+      serviceCounts[s] = (serviceCounts[s] || 0) + 1;
+    });
+    const serviceData = Object.keys(serviceCounts).map(name => ({
+      name,
+      value: serviceCounts[name]
+    }));
+    if (serviceData.length === 0) {
+      serviceData.push({ name: 'No Data', value: 1 }); // Prevent empty chart crash
+    }
+
+    // 2. Revenue Trend (aggregate total_amount by month)
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const revenueMap = {};
+    
+    // Pre-fill last 6 months to ensure chart looks good even with empty data
+    const d = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const past = new Date(d.getFullYear(), d.getMonth() - i, 1);
+      revenueMap[monthNames[past.getMonth()]] = 0;
+    }
+
+    bookings.forEach(b => {
+      if (b.status === 'COMPLETED' && b.total_amount) {
+        const month = monthNames[new Date(b.createdAt).getMonth()];
+        if (revenueMap[month] !== undefined) {
+          revenueMap[month] += parseFloat(b.total_amount);
+        } else {
+          // If booking is older than 6 months, we could ignore or add it
+          revenueMap[month] = (revenueMap[month] || 0) + parseFloat(b.total_amount);
+        }
+      }
+    });
+
+    // Convert map to array and sort by chronological order of last 6 months
+    const revenueData = [];
+    for (let i = 5; i >= 0; i--) {
+      const past = new Date(d.getFullYear(), d.getMonth() - i, 1);
+      const mName = monthNames[past.getMonth()];
+      revenueData.push({ name: mName, revenue: revenueMap[mName] });
+    }
+
+    // 3. Worker Data (count by status)
+    const workers = await db.Worker.findAll({
+      where: { dealerId: id }
+    });
+    
+    const workerCounts = { 'AVAILABLE': 0, 'BUSY': 0, 'OFFLINE': 0 };
+    workers.forEach(w => {
+      if (workerCounts[w.status] !== undefined) {
+        workerCounts[w.status]++;
+      }
+    });
+    
+    const workerData = [
+      { name: 'Available', value: workerCounts['AVAILABLE'] },
+      { name: 'Busy', value: workerCounts['BUSY'] },
+      { name: 'Offline', value: workerCounts['OFFLINE'] },
+    ];
+
+    res.json({ revenueData, serviceData, workerData });
+  } catch (error) {
+    console.error("Analytics fetch error:", error);
+    res.status(500).json({ error: 'Failed to fetch analytics' });
+  }
+});
+
+// GET /api/hq/applications
+router.get('/hq/applications', async (req, res) => {
+  try {
+    const pending = await db.User.findAll({ where: { role: 'DEALER', status: 'PENDING' }});
+    res.json(pending);
+  } catch(error) {
+    res.status(500).json({ error: 'Failed to fetch' });
+  }
+});
+
+// PUT /api/hq/applications/:id/action
+router.put('/hq/applications/:id/action', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action } = req.body; // 'APPROVE' or 'REJECT'
+    const user = await db.User.findByPk(id);
+    if (!user) return res.status(404).json({ error: "Not found" });
+    
+    user.status = action === 'APPROVE' ? 'APPROVED' : 'REJECTED';
+    await user.save();
+    res.json({ message: `${action} successful`, user });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update' });
+  }
+});
+
 // GET /api/dealer/profile
 router.get('/dealer/profile', async (req, res) => {
   try {
-    const userId = req.headers.authorization; // Using ID as token
-    const user = await db.User.findByPk(userId);
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'No token' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await db.User.findByPk(decoded.id);
     if (!user) return res.status(404).json({ error: "Not found" });
     res.json(user);
   } catch (error) {
@@ -185,8 +461,10 @@ router.get('/dealer/profile', async (req, res) => {
 // POST /api/dealer/profile/request-edit
 router.post('/dealer/profile/request-edit', async (req, res) => {
   try {
-    const userId = req.headers.authorization;
-    const user = await db.User.findByPk(userId);
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'No token' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await db.User.findByPk(decoded.id);
     if (!user) return res.status(404).json({ error: "Not found" });
     
     user.edit_permission_status = 'REQUESTED';
@@ -201,8 +479,10 @@ router.post('/dealer/profile/request-edit', async (req, res) => {
 // PUT /api/dealer/profile
 router.put('/dealer/profile', async (req, res) => {
   try {
-    const userId = req.headers.authorization;
-    const user = await db.User.findByPk(userId);
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'No token' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await db.User.findByPk(decoded.id);
     if (!user) return res.status(404).json({ error: "Not found" });
     
     if (user.edit_permission_status !== 'GRANTED') {
@@ -222,23 +502,6 @@ router.put('/dealer/profile', async (req, res) => {
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: "Failed to update profile" });
-  }
-});
-
-// --- HQ PORTAL ROUTES ---
-
-// POST /api/hq/login
-router.post('/hq/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const hq = await db.User.findOne({ where: { email, password, role: 'HQ' } });
-    if (hq) {
-      res.json({ token: hq.id, user: hq });
-    } else {
-      res.status(401).json({ error: "Invalid credentials" });
-    }
-  } catch (error) {
-    res.status(500).json({ error: "Login failed" });
   }
 });
 
@@ -277,10 +540,20 @@ router.put('/hq/requests/:id', async (req, res) => {
 // POST /api/bookings - Create a new booking
 router.post('/bookings', async (req, res) => {
   try {
-    const { userId, service, scheduled_time, total_amount } = req.body;
+    const { service, scheduled_time, total_amount } = req.body;
+    let actualUserId = null;
+
+    const token = req.headers.authorization?.split(' ')[1];
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        actualUserId = decoded.id;
+      } catch (err) {
+        console.warn("Invalid token in booking creation");
+      }
+    }
     
     // For now, if no userId is provided, find or create a default user
-    let actualUserId = userId;
     if (!actualUserId) {
       const [user] = await db.User.findOrCreate({
         where: { email: 'testcustomer@example.com' },
@@ -353,9 +626,6 @@ router.put('/dealer/bookings/:id/assign', async (req, res) => {
     
     // Also update worker status to BUSY
     await db.Worker.update({ status: 'BUSY' }, { where: { id: workerId } });
-
-    // Start simulation
-    simulateBookingProgress(booking.id, workerId, req.io);
 
     // Notify customer that it was assigned immediately
     if (req.io) {

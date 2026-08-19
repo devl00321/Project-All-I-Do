@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Sidebar } from '../../components/Sidebar';
 import Home from './Home';
-import Services from './Services';
 import Booking from './Booking';
 import LiveTracking from './LiveTracking';
 import Auth from './Auth';
@@ -10,21 +9,22 @@ import KittenChatbot from '../../components/KittenChatbot';
 import Profile from './Profile';
 import LiveTrack from './LiveTrack';
 import BookingHistory from './BookingHistory';
+import OnboardingWalkthrough from '../../components/OnboardingWalkthrough';
 import gsap from 'gsap';
 
 export default function CustomerApp() {
   const [activeTab, setActiveTab] = useState('home');
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [preSelectedService, setPreSelectedService] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState("John Doe");
+  const [userName, setUserName] = useState("User");
   const [userPhone, setUserPhone] = useState("9876543210");
+  const [userLocation, setUserLocation] = useState("Kolkata, West Bengal");
+  const [requireAuth, setRequireAuth] = useState(false);
   const [activeBookingId, setActiveBookingId] = useState(null);
   const [activeBooking, setActiveBooking] = useState(null);
-  const [bookingHistory, setBookingHistory] = useState([
-    { id: "BK-2847", service: "Plumber", serviceId: "plumber", date: "May 24, 2026", amount: "₹350", rating: 5, worker: "Rajesh Kumar", paymentMethod: "UPI" },
-    { id: "BK-2631", service: "Electrician", serviceId: "electrician", date: "May 18, 2026", amount: "₹480", rating: 4, worker: "Sunil Prasad", paymentMethod: "UPI" },
-    { id: "BK-2290", service: "Cleaning", serviceId: "cleaning", date: "May 10, 2026", amount: "₹600", rating: 5, worker: "Meena Singh", paymentMethod: "Cash" },
-  ]);
+  const [bookingHistory, setBookingHistory] = useState([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const contentRef = useRef(null);
 
   // Persian Cat companion state triggers
@@ -51,16 +51,12 @@ export default function CustomerApp() {
     return () => clearTimeout(splashTimer);
   }, []);
 
-  // Jump left or right and toggle toys on navigation/tabs transition
+  // Toggle toys on navigation/tabs transition (Cat always stays right now)
   useEffect(() => {
     if (showSplash || showNotice) return;
     
-    if (activeTab === 'book' || activeTab === 'track') {
-      setCatState('sitting_right');
-    } else {
-      setCatState('sitting_left');
-      setIsChatOpen(false); // Close chat when Puffy sits on the left side to avoid mirror scale distortion
-    }
+    // The cat is now always sitting on the right to act as a fixed assistant
+    setCatState('sitting_right');
     
     // Set active service toy playing
     if (activeTab === 'book' && preSelectedService) {
@@ -83,6 +79,7 @@ export default function CustomerApp() {
   const handleBook = (service) => {
     setPreSelectedService(service);
     setActiveTab('book');
+    setIsMobileMenuOpen(false);
   };
 
   const handleConfirm = (bookingData) => {
@@ -131,13 +128,34 @@ export default function CustomerApp() {
     }, 2000);
   };
 
-  // If user is not logged in and tries to access profile, show Auth full-screen
-  if (activeTab === 'profile' && !isLoggedIn) {
-    return <Auth onLogin={(name, phone) => { setUserName(name); setUserPhone(phone); setIsLoggedIn(true); }} />;
-  }
-
   return (
     <div className="app-container flex h-screen w-full overflow-hidden bg-[var(--bg)]">
+      {/* Auth overlay */}
+      {((activeTab === 'profile' || requireAuth) && !isLoggedIn) && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 100, background: 'var(--bg)' }}>
+          <Auth onLogin={(name, phone, isNewUser) => { 
+            setUserName(name || "User"); 
+            setUserPhone(phone); 
+            setIsLoggedIn(true); 
+            setRequireAuth(false);
+            if (isNewUser) {
+              setShowOnboarding(true);
+            }
+          }} />
+          {requireAuth && activeTab !== 'profile' && (
+            <button 
+              onClick={() => setRequireAuth(false)}
+              style={{ position: 'absolute', top: 20, left: 20, zIndex: 101, background: 'var(--surface)', border: '1px solid #ddd', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, color: 'var(--ink)' }}
+            >
+              ← Back to Booking
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Onboarding overlay */}
+      {showOnboarding && <OnboardingWalkthrough onComplete={() => setShowOnboarding(false)} />}
+
       {/* Splash overlay */}
       {showSplash && (
         <div className="cat-splash-overlay">
@@ -154,10 +172,31 @@ export default function CustomerApp() {
         </div>
       )}
 
-      <Sidebar tab={activeTab} onTab={setActiveTab} hasActive={activeBookingId !== null} />
+      <Sidebar 
+        tab={activeTab} 
+        onTab={(tab) => { setActiveTab(tab); setIsMobileMenuOpen(false); }} 
+        hasActive={activeBookingId !== null} 
+        userName={userName} 
+        onLogout={isLoggedIn ? () => { setIsLoggedIn(false); setActiveTab('home'); setIsMobileMenuOpen(false); } : null}
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+      />
+      
       <div className="main-content" ref={contentRef}>
+        {/* Mobile Topbar */}
+        <div className="mobile-topbar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'linear-gradient(135deg, var(--mint), var(--mintDeep))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: '14px' }}>A</div>
+            <span style={{ fontFamily: 'Fraunces, serif', fontSize: '1.1rem', fontWeight: '700', color: 'var(--ink)' }}>ALLIDO</span>
+          </div>
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            style={{ background: 'transparent', border: 'none', fontSize: '24px', color: 'var(--ink)' }}
+          >
+            ☰
+          </button>
+        </div>
         {activeTab === 'home' && <Home onBook={handleBook} onTab={setActiveTab} hasActive={activeBookingId !== null} bookingHistory={bookingHistory} />}
-        {activeTab === 'services' && <Services onBook={handleBook} />}
         {activeTab === 'book' && (
           <Booking 
             preService={preSelectedService} 
@@ -170,6 +209,8 @@ export default function CustomerApp() {
               }, 1800);
             }} 
             setCatState={setCatState}
+            isLoggedIn={isLoggedIn}
+            onRequireAuth={() => setRequireAuth(true)}
           />
         )}
         {activeTab === 'bookings' && <BookingHistory />}
@@ -186,17 +227,26 @@ export default function CustomerApp() {
       {/* Floating Cat Companion and Chatbot Assistant */}
       {!showSplash && !showNotice && (
         <>
-          {/* Kitten Chatbot Window (only when on right side of screen) */}
-          {catState !== 'sitting_left' && (
-            <KittenChatbot 
-              isOpen={isChatOpen} 
-              onClose={() => setIsChatOpen(false)} 
-              activeServiceId={catServiceId}
-            />
-          )}
+          {/* Kitten Chatbot Window */}
+          <KittenChatbot 
+            isOpen={isChatOpen} 
+            onClose={() => setIsChatOpen(false)} 
+            activeServiceId={catServiceId}
+            userName={userName}
+            userPhone={userPhone}
+            userLocation={userLocation}
+            isLoggedIn={isLoggedIn}
+            bookingHistory={bookingHistory}
+            onNavigate={(tab, service) => {
+              if (service) {
+                setPreSelectedService(service);
+              }
+              setActiveTab(tab);
+            }}
+          />
 
-          {/* Floating hint tooltip (only when on right side of screen and closed) */}
-          {catState !== 'sitting_left' && !isChatOpen && (
+          {/* Floating hint tooltip (only when closed) */}
+          {!isChatOpen && (
             <div 
               className="puffy-chat-bubble-hint"
               onClick={() => setIsChatOpen(true)}
@@ -207,15 +257,10 @@ export default function CustomerApp() {
 
           <div 
             className="cat-companion-container"
-            onClick={() => {
-              if (catState !== 'sitting_left') {
-                setIsChatOpen(prev => !prev);
-              }
-            }}
+            onClick={() => setIsChatOpen(prev => !prev)}
             style={{
-              transform: catState === 'sitting_left' 
-                ? 'translate(var(--cat-left-translate), 0) scaleX(-1)' 
-                : 'translate(0, 0) scaleX(1)'
+              /* FIXED: Enforcing translate(0,0) permanently so the cat never runs left */
+              transform: 'translate(0, 0) scaleX(1)'
             }}
           >
             <CatCompanion state={catState} serviceId={catServiceId} />

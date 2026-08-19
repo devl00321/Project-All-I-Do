@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import * as Icons from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 import './landing.css';
 
 const Reveal = ({ children, className = '', style = {}, as: Component = 'div' }) => {
@@ -19,7 +21,7 @@ const Reveal = ({ children, className = '', style = {}, as: Component = 'div' })
   }, []);
 
   return (
-    <Component ref={ref} className={`reveal ${isVisible ? 'visible' : ''} ${className}`} style={style}>
+    <Component ref={ref} className={`reveal ${isVisible ? 'visible' : ''} ${className}`} style={style} aria-hidden={!isVisible}>
       {children}
     </Component>
   );
@@ -27,66 +29,21 @@ const Reveal = ({ children, className = '', style = {}, as: Component = 'div' })
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [preloaderGone, setPreloaderGone] = useState(false);
-  const [count, setCount] = useState(0);
-  const countRef = useRef(null);
-  const [countDone, setCountDone] = useState(false);
   
   // Dispatch Card State
   const dispatchStates = [
-    {badge:'REQUESTED',badgeBg:'rgba(93,202,165,.15)',badgeCol:'#07845a',fill:'10%',icon:'🔧',iconBg:'rgba(56,189,248,.2)',name:'Leaking kitchen tap',eta:'—',step:0,worker:false},
-    {badge:'MATCHED',badgeBg:'rgba(245,158,11,.15)',badgeCol:'#b5790b',fill:'38%',icon:'🔧',iconBg:'rgba(56,189,248,.2)',name:'Leaking kitchen tap',eta:'18 min',step:1,worker:true},
-    {badge:'EN ROUTE',badgeBg:'rgba(56,189,248,.15)',badgeCol:'#0e7fae',fill:'70%',icon:'🔧',iconBg:'rgba(93,202,165,.2)',name:'Leaking kitchen tap',eta:'6 min',step:2,worker:true},
-    {badge:'DONE ✓',badgeBg:'rgba(93,202,165,.2)',badgeCol:'#07845a',fill:'100%',icon:'✅',iconBg:'rgba(93,202,165,.15)',name:'Leaking kitchen tap',eta:'Arrived',step:3,worker:true},
+    {badge:'REQUESTED',badgeBg:'rgba(47,191,143,.15)',badgeCol:'#1F9971',fill:'10%',icon:<Icons.Wrench size={20}/>,iconBg:'rgba(56,189,248,.2)',name:'Leaking kitchen tap',eta:'—',step:0,worker:false},
+    {badge:'MATCHED',badgeBg:'rgba(245,158,11,.15)',badgeCol:'#b5790b',fill:'38%',icon:<Icons.Wrench size={20}/>,iconBg:'rgba(56,189,248,.2)',name:'Leaking kitchen tap',eta:'18 min',step:1,worker:true},
+    {badge:'EN ROUTE',badgeBg:'rgba(56,189,248,.15)',badgeCol:'#0e7fae',fill:'70%',icon:<Icons.Wrench size={20}/>,iconBg:'rgba(47,191,143,.2)',name:'Leaking kitchen tap',eta:'6 min',step:2,worker:true},
+    {badge:'DONE ✓',badgeBg:'rgba(47,191,143,.2)',badgeCol:'#1F9971',fill:'100%',icon:<Icons.CheckCircle2 size={20}/>,iconBg:'rgba(47,191,143,.15)',name:'Leaking kitchen tap',eta:'Arrived',step:3,worker:true},
   ];
   const [dcStateIdx, setDcStateIdx] = useState(0);
 
-  // How It Works State
-  const hiwRef = useRef(null);
-  const [hiwActive, setHiwActive] = useState(false);
-  
   // Page Transition State
   const [transitionState, setTransitionState] = useState({ active: false, x: 0, y: 0, color: '', target: '' });
 
   // Dark Mode State
-  const [isDark, setIsDark] = useState(false);
-
-  // Marquee Reviews
-  const reviews = [
-    {name:'Priya Mukherjee',loc:'Suri, Birbhum',text:'The plumber tracked like a food delivery app. Fixed my leak in 20 minutes — didn\'t expect that level of polish.',initials:'PM',color:'#0E9F72'},
-    {name:'Arjun Mehta',loc:'Bolpur, West Bengal',text:'Booked an electrician at 11pm for a tripped circuit and someone was at my door in 25 minutes. Genuinely impressive.',initials:'AM',color:'#38BDF8'},
-    {name:'Sneha Reddy',loc:'Rampurhat',text:'AC stopped working in a heatwave. ALLIDO had a tech out same-day with a transparent quote upfront.',initials:'SR',color:'#F59E0B'},
-    {name:'Karthik Das',loc:'Suri Ward 3',text:'I manage a few properties and finding reliable cleaners used to be a nightmare. Now I just tap a button.',initials:'KD',color:'#E2725B'},
-    {name:'Ravi Sen',loc:'Kolkata',text:'My car battery died and a mechanic came over and jump-started it. Super professional service.',initials:'RS',color:'#7C6DE8'},
-    {name:'Ananya Roy',loc:'Asansol',text:'The app interface is flawless. The whole process feels incredibly premium yet the pricing is very reasonable.',initials:'AR',color:'#07845a'},
-  ];
-
-  useEffect(() => {
-    // Preloader timeout
-    setTimeout(() => setPreloaderGone(true), 700);
-  }, []);
-
-  useEffect(() => {
-    // Count-up observer
-    if (!countRef.current) return;
-    const cntIO = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting && !countDone) {
-          setCountDone(true);
-          let start = 0, target = 12400, duration = 1800;
-          let step = target / duration * 16;
-          const tick = () => {
-            start = Math.min(start + step, target);
-            setCount(Math.floor(start));
-            if (start < target) requestAnimationFrame(tick);
-          };
-          tick();
-        }
-      });
-    });
-    cntIO.observe(countRef.current);
-    return () => cntIO.disconnect();
-  }, [countDone]);
+  const { isDark, setIsDark } = useTheme();
 
   useEffect(() => {
     // Dispatch Card Loop
@@ -94,21 +51,6 @@ export default function LandingPage() {
       setDcStateIdx(prev => (prev + 1) % dispatchStates.length);
     }, 2800);
     return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    // How It Works observer
-    if (!hiwRef.current) return;
-    const hiwIO = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          setHiwActive(true);
-          hiwIO.disconnect();
-        }
-      });
-    }, { threshold: 0.25 });
-    hiwIO.observe(hiwRef.current);
-    return () => hiwIO.disconnect();
   }, []);
 
   const startTransition = (e, targetUrl, color) => {
@@ -134,7 +76,7 @@ export default function LandingPage() {
   const dc = dispatchStates[dcStateIdx];
 
   return (
-    <div className={`landing-page-container ${transitionState.active ? 'exiting' : ''} ${isDark ? 'dark-theme' : ''}`}>
+    <div className={`landing-page-container ${transitionState.active ? 'exiting' : ''}`}>
       {/* TRANSITION OVERLAY */}
       <div 
         className={`transition-overlay ${transitionState.active ? 'active' : ''}`}
@@ -145,115 +87,81 @@ export default function LandingPage() {
         }}
       />
 
-      {/* PRELOADER */}
-      {!preloaderGone && (
-        <div id="preloader" className={preloaderGone ? 'gone' : ''}>
-          <div className="preloader-logo">ALL<span>IDO</span></div>
-        </div>
-      )}
-
-      {/* NAVIGATION */}
-      <div className="nav-shell" id="navShell">
-        <div className="wrap">
-          <nav className="nav-inner">
-            <a href="#top" className="brand">
-              <span className="brand-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M4 13L12 5L20 13M7 11V19H17V11" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </span>
-              ALLIDO
-            </a>
-            <div className="nav-links">
-              <a href="#services">Services</a>
-              <a href="#how-it-works">How it works</a>
-              <a href="#operators">For operators</a>
-              <a href="#reviews">Reviews</a>
+      {/* HEADER */}
+      <header className="site-header">
+        <div className="wrap header-row">
+          <a href="#top" className="brand" aria-label="ALLIDO home">
+            <div style={{width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg, var(--mint) 0%, var(--mint-deep) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+              <Icons.ShieldCheck color="#fff" size={18} />
             </div>
-            <div className="nav-actions">
-              <button 
-                onClick={() => setIsDark(!isDark)} 
-                className="theme-toggle" 
-                aria-label="Toggle dark mode"
-              >
-                {isDark ? '☀️' : '🌙'}
-              </button>
-              <a href="#operators" onClick={handlePartner} className="btn btn-ghost hide-mobile">Become a partner</a>
-              <a href="#book" onClick={handleBook} className="btn btn-primary">Book a service</a>
-            </div>
+            ALLIDO
+          </a>
+          <nav aria-label="Primary">
+            <ul className="nav-links">
+              <li><a href="#services">Services</a></li>
+              <li><a href="#how-it-works">How it works</a></li>
+              <li><a href="#trust">Trust &amp; safety</a></li>
+              <li><a href="#dealers">Partner with us</a></li>
+              <li><a href="#coverage">Coverage</a></li>
+            </ul>
           </nav>
+          <div className="header-actions">
+            <button 
+              onClick={() => setIsDark(!isDark)} 
+              className="theme-toggle" 
+              aria-label="Toggle dark mode"
+            >
+              {isDark ? <Icons.Sun size={18}/> : <Icons.Moon size={18}/>}
+            </button>
+            <span className="locale-pill"><span className="locale-dot"></span> Suri, Birbhum</span>
+            <a href="#book" onClick={handleBook} className="btn btn-primary btn-sm">Get early access</a>
+            <button className="nav-toggle" aria-label="Open menu">
+              <span></span><span></span><span></span>
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* HERO */}
-      <header className="hero" id="top">
-        <div className="hero-bg"></div>
-        <div className="hero-grid-dots"></div>
-        <div className="orb orb-1"></div>
-        <div className="orb orb-2"></div>
-        <div className="orb orb-3"></div>
-
-        <div className="wrap">
-          <div className="hero-content">
-            {/* Copy */}
-            <div className="hero-copy">
-              <div className="eyebrow-pill">
-                <span className="pulse-dot"></span>
-                Live in Suri &amp; expanding across West Bengal
-              </div>
-
-              <h1 className="hero-headline">
-                <span className="word"><span>Your</span></span>
-                <span className="word"><span>city's</span></span>
-                <span className="word"><span className="hero-accent">best</span></span>
-                <span className="word"><span>experts</span></span>
-                <br />
-                <span className="word"><span className="hero-accent-line">at your doorstep</span></span>
-              </h1>
-
-              <p className="hero-sub">Book verified plumbers, electricians, AC techs, and cleaners in under 2 minutes. Track them live. Pay in-app. No surprises.</p>
-
+      <main id="top">
+        {/* HERO */}
+        <section className="hero">
+          <div className="wrap hero-grid">
+            <div>
+              <span className="eyebrow"><span className="pulse"></span> Now onboarding founding dealers in Suri</span>
+              <h1>Every trusted hand in Suri, <em>one app away.</em></h1>
+              <p className="hero-sub">ALLIDO connects your household to plumbers, electricians, cleaners and drivers who are personally vetted by a local dealer — not an anonymous listing. Book once, and someone accountable shows up.</p>
               <div className="hero-ctas">
-                <a href="#book" onClick={handleBook} className="btn btn-primary btn-lg">
-                  Book a service
-                  <svg className="arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                    <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </a>
-                <a href="#operators" onClick={handlePartner} className="btn btn-ghost btn-lg">Become a partner</a>
+                <a href="#book" onClick={handleBook} className="btn btn-mint">Book a service</a>
+                <a href="#dealers" onClick={handlePartner} className="btn btn-ghost">Become a founding dealer</a>
               </div>
+              <p className="hero-note">Available in Bengali, Hindi and English · Pay by UPI, card or cash</p>
 
-              <div className="trust-bar">
+              <div className="trust-row">
                 <div className="trust-item">
-                  <strong ref={countRef}>{count.toLocaleString()}{countDone && count >= 12400 ? '+' : ''}</strong>
-                  <span>Jobs completed</span>
+                  <span className="num mono">100%</span>
+                  <span className="lbl">ID-verified before dispatch</span>
                 </div>
-                <div className="trust-divider"></div>
                 <div className="trust-item">
-                  <strong>4.9/5</strong>
-                  <span>Average rating</span>
+                  <span class="num mono">1</span>
+                  <span className="lbl">Dealer accountable per job</span>
                 </div>
-                <div className="trust-divider"></div>
                 <div className="trust-item">
-                  <strong>&lt;18 min</strong>
-                  <span>Avg. arrival time</span>
+                  <span className="num mono">9</span>
+                  <span className="lbl">Service categories at launch</span>
                 </div>
               </div>
             </div>
 
-            {/* Dispatch Card */}
+            {/* Re-integrated Dispatch Card for the Hero */}
             <div className="dispatch-stage">
-              <div className="card-glow"></div>
-
               {/* Floating badges */}
               <div className="float-badge float-badge-1">
-                <span className="check-circle">
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M5 13L9 17L19 7" stroke="white" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </span>
+                <Icons.ShieldCheck size={16} color="var(--mint-deep)" />
                 Background verified
               </div>
               <div className="float-badge float-badge-2">
-                ⭐ 4.9 rated · 314 jobs
+                <Icons.Star size={14} fill="var(--amber)" stroke="none" />
+                4.9 rated · 314 jobs
               </div>
 
               {/* Main card */}
@@ -290,250 +198,421 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
 
+        {/* TRUST STRIP */}
+        <div className="strip">
+          <div className="wrap strip-row">
+            <div className="strip-item"><Icons.UserCheck size={16}/> Aadhaar / Voter ID checked</div>
+            <div className="strip-item"><Icons.Shield size={16}/> One dealer, one point of accountability</div>
+            <div className="strip-item"><Icons.Navigation size={16}/> Live tracking from dispatch to done</div>
+            <div className="strip-item"><Icons.CreditCard size={16}/> UPI, card or cash on completion</div>
+            <div className="strip-item"><Icons.Languages size={16}/> বাংলা · हिंदी · English</div>
           </div>
         </div>
-      </header>
 
-      {/* TRUST STRIP */}
-      <section className="trust-strip">
-        <div className="wrap">
-          <div className="trust-strip-inner">
-            <span className="strip-label">Now serving</span>
-            <div className="strip-cities">
-              <span className="strip-city">Suri</span>
-              <span className="strip-city">Bolpur</span>
-              <span className="strip-city">Rampurhat</span>
-              <span className="strip-city">Kolkata</span>
-              <span className="strip-city">Siliguri</span>
-              <span className="strip-city">Asansol</span>
-            </div>
-          </div>
-        </div>
-      </section>
+        {/* HOW IT WORKS */}
+        <section id="how-it-works">
+          <div className="wrap">
+            <Reveal className="section-head">
+              <span className="section-eyebrow">How it works</span>
+              <h2>Four steps, one accountable dealer throughout.</h2>
+              <p>You never deal with an anonymous gig worker. Every booking is reviewed and assigned by a dealer who has personally verified the person coming to your door.</p>
+            </Reveal>
 
-      {/* SERVICES */}
-      <section className="section" id="services">
-        <div className="wrap">
-          <Reveal className="section-head">
-            <span className="section-tag">What we do</span>
-            <h2>One platform, every fix your home needs</h2>
-            <p>Pick a service — we match you with the nearest verified professional in minutes.</p>
-          </Reveal>
-
-          <div className="services-grid">
-            {[
-              { color: 'var(--sky)', bg: 'rgba(56,189,248,.12)', icon: '🔧', title: 'Plumbing', desc: 'Leaks, clogs, fittings, and full bathroom installs handled fast.' },
-              { color: 'var(--amber)', bg: 'rgba(245,158,11,.12)', icon: '⚡', title: 'Electrical', desc: 'Wiring, switchboards, fan & appliance installs by certified techs.' },
-              { color: 'var(--mint-deep)', bg: 'var(--mint-pale)', icon: '❄️', title: 'AC Repair', desc: 'Servicing, gas refills, and emergency cooling fixes — same day.' },
-              { color: 'var(--coral)', bg: 'rgba(226,114,91,.1)', icon: '🧹', title: 'Cleaning', desc: 'Deep cleans, move-in/out, and weekly upkeep by trained teams.' },
-              { color: 'var(--violet)', bg: 'rgba(124,109,232,.1)', icon: '🪚', title: 'Carpentry', desc: 'Furniture repair, modular fittings, and door & lock work.' },
-              { color: 'var(--sky)', bg: 'rgba(56,189,248,.1)', icon: '🚗', title: 'Auto & Mechanic', desc: 'Doorstep car & bike servicing, batteries, and breakdowns.' },
-              { color: 'var(--amber)', bg: 'rgba(245,158,11,.1)', icon: '🎨', title: 'Painting', desc: 'Touch-ups to full-home paint jobs, interior & exterior.' },
-              { color: 'var(--mint-deep)', bg: 'var(--mint-pale)', icon: '🛠️', title: 'Appliance Repair', desc: 'Washing machines, fridges, microwaves, and more.' }
-            ].map((svc, i) => (
-              <Reveal key={i} className="svc-card" style={{ '--i': i, transitionDelay: `${i * 0.05}s` }}>
-                <div className="svc-bar" style={{ background: svc.color }}></div>
-                <div className="svc-icon" style={{ background: svc.bg }}>{svc.icon}</div>
-                <h3>{svc.title}</h3>
-                <p>{svc.desc}</p>
-                <span className="svc-link" style={{ color: svc.color }} onClick={handleBook}>
-                  Explore
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M5 12H19M19 12L13 6M19 12L13 18"/></svg>
-                </span>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section className="section hiw-bg" id="how-it-works">
-        <div className="wrap">
-          <Reveal className="section-head section-head-center">
-            <span className="section-tag">How it works</span>
-            <h2>From "it's broken" to "it's fixed" — four steps</h2>
-          </Reveal>
-
-          <div className="hiw-grid" id="hiwGrid" ref={hiwRef}>
-            <div className="hiw-line">
-              <div className="hiw-fill" style={{ width: hiwActive ? '100%' : '0%' }}></div>
-            </div>
-
-            {[
-              { num: '01', title: 'Choose a service', desc: "Tell us what's wrong or just pick a category. No call centers, no hold music." },
-              { num: '02', title: 'Pick a time', desc: "See real availability near you and book the slot that works for you." },
-              { num: '03', title: 'Track your pro live', desc: "Watch them move toward you on the map with an ETA that updates in real time." },
-              { num: '04', title: 'Job done, rated', desc: "Pay in-app, rate the work, keep a record. No haggling, ever." }
-            ].map((step, i) => (
-                <div key={i} className={`hiw-step ${hiwActive ? 'active' : ''}`} style={{ '--i': i }}>
-                  <div className="hiw-num">{step.num}</div>
-                  <h3>{step.title}</h3>
-                  <p>{step.desc}</p>
-                </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* OPERATOR SECTION */}
-      <section className="section" id="operators" style={{ paddingTop: '40px' }}>
-        <div>
-          <Reveal className="operator-wrap">
-            <div className="op-glow-1"></div>
-            <div className="op-glow-2"></div>
-            <div className="op-grid">
-              <div>
-                <span className="op-tag">For city operators</span>
-                <h2>Run your city's home-services fleet — we built the backend so you don't have to.</h2>
-                <p>Become an ALLIDO City Operator. Manage your own roster of workers, assign jobs as they land, and grow a territory you control — without writing a line of code.</p>
-                <div className="op-metrics">
-                  <div className="op-metric"><strong>50+</strong><span>Workers managed per city</span></div>
-                  <div className="op-metric"><strong>₹0</strong><span>Tech setup required</span></div>
-                  <div className="op-metric"><strong>24/7</strong><span>Automated job dispatch</span></div>
-                  <div className="op-metric"><strong>30%</strong><span>Avg. operator margin</span></div>
-                </div>
-                <a href="#operators" onClick={handlePartner} className="btn btn-primary btn-lg">
-                  Apply to operate your city
-                  <svg className="arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                    <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </a>
+            <Reveal className="steps">
+              <div className="step">
+                <span className="step-index mono">01 / BOOK</span>
+                <h3>Describe the job</h3>
+                <p>Pick a category, describe the problem, add photos if useful, and choose a time slot. Pay by UPI or choose pay-after-service.</p>
+                <span className="step-arrow"><Icons.ArrowRight size={14}/></span>
               </div>
-
-              <div className="op-cards">
-                <div className="op-card op-card-1">
-                  <div className="op-card-name">Birbhum Fleet</div>
-                  <div className="op-row"><span className="op-row-lbl">Active workers</span><span className="op-row-val">58</span></div>
-                  <div className="op-row"><span className="op-row-lbl">Jobs today</span><span className="op-row-val">142</span></div>
-                </div>
-                <div className="op-card op-card-2">
-                  <div className="op-card-name">New assignment</div>
-                  <div className="op-row"><span className="op-row-lbl">AC Repair · Suri Ward 4</span><span className="op-row-val">📍 1.2 km</span></div>
-                </div>
-                <div className="op-card op-card-3">
-                  <div className="op-card-name">This month's payout</div>
-                  <div className="op-row"><span className="op-row-lbl">Operator margin</span><span className="op-row-val">₹2,84,000</span></div>
-                </div>
+              <div className="step">
+                <span className="step-index mono">02 / ASSIGN</span>
+                <h3>Dealer assigns a worker</h3>
+                <p>Your local dealer reviews the job and hand-picks a verified worker from their own team based on skill and availability.</p>
+                <span className="step-arrow"><Icons.ArrowRight size={14}/></span>
               </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+              <div className="step">
+                <span className="step-index mono">03 / TRACK</span>
+                <h3>Watch them arrive</h3>
+                <p>See the worker's name, photo and live location the moment they're assigned. Their number stays private until then.</p>
+                <span className="step-arrow"><Icons.ArrowRight size={14}/></span>
+              </div>
+              <div className="step">
+                <span className="step-index mono">04 / RATE</span>
+                <h3>Pay and review</h3>
+                <p>Confirm the job is done, settle payment, and rate the worker. Low ratings are flagged straight to the dealer.</p>
+              </div>
+            </Reveal>
 
-      {/* REVIEWS (MARQUEE) */}
-      <section className="reviews-section" id="reviews">
-        <div className="wrap">
-          <Reveal className="section-head section-head-center">
-            <span className="section-tag">Social proof</span>
-            <h2>Neighbors, not strangers</h2>
-            <p>Every rating below is from a real booked job — nothing curated, nothing paid for.</p>
-          </Reveal>
-        </div>
+            <Reveal className="status-track">
+              <div className="status-node done"><span className="status-line"></span><span className="status-dot"></span><span className="lbl">CONFIRMED</span></div>
+              <div className="status-node done"><span className="status-line"></span><span className="status-dot"></span><span className="lbl">ASSIGNED</span></div>
+              <div className="status-node done"><span className="status-line"></span><span className="status-dot"></span><span className="lbl">EN ROUTE</span></div>
+              <div className="status-node"><span className="status-line"></span><span className="status-dot"></span><span className="lbl">IN PROGRESS</span></div>
+              <div className="status-node"><span className="status-line"></span><span className="status-dot"></span><span className="lbl">COMPLETED</span></div>
+            </Reveal>
+          </div>
+        </section>
 
-        <Reveal className="marquee-outer" style={{ padding: '0 0 100px' }}>
-          <div className="marquee-track">
-            {/* Duplicate array for seamless looping */}
-            {[...reviews, ...reviews, ...reviews].map((rev, i) => (
-              <div key={i} className="review-card">
-                <div className="review-stars">
-                  {[...Array(5)].map((_, idx) => (
-                    <svg key={idx} viewBox="0 0 24 24"><path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"/></svg>
-                  ))}
-                </div>
-                <p>{rev.text}</p>
-                <div className="reviewer">
-                  <div className="reviewer-av" style={{ background: rev.color }}>{rev.initials}</div>
+        {/* SERVICES */}
+        <section id="services" className="band">
+          <div className="wrap">
+            <Reveal className="section-head">
+              <span className="section-eyebrow">Services</span>
+              <h2>Everything a household needs, launching together in Suri.</h2>
+              <p>Nine categories at launch, each staffed by workers a dealer already knows and trusts. More categories will open as the dealer network grows.</p>
+            </Reveal>
+
+            <Reveal className="service-grid">
+              <div className="service-card" onClick={handleBook}>
+                <div className="service-photo"><img src="/services/plumber.png" alt="Plumber" /></div>
+                <div className="service-body"><h3>Plumber</h3><span className="arrow"><Icons.ArrowRight size={14}/></span></div>
+              </div>
+              <div className="service-card" onClick={handleBook}>
+                <div className="service-photo"><img src="/services/electrician.png" alt="Electrician" /></div>
+                <div className="service-body"><h3>Electrician</h3><span className="arrow"><Icons.ArrowRight size={14}/></span></div>
+              </div>
+              <div className="service-card" onClick={handleBook}>
+                <div className="service-photo"><img src="/services/carpenter.png" alt="Carpenter" /></div>
+                <div className="service-body"><h3>Carpenter</h3><span className="arrow"><Icons.ArrowRight size={14}/></span></div>
+              </div>
+              <div className="service-card" onClick={handleBook}>
+                <div className="service-photo"><img src="/services/ac_repair.png" alt="AC Repair" /></div>
+                <div className="service-body"><h3>AC Repair</h3><span className="arrow"><Icons.ArrowRight size={14}/></span></div>
+              </div>
+              <div className="service-card" onClick={handleBook}>
+                <div className="service-photo"><img src="/services/cleaning.png" alt="Home Cleaning" /></div>
+                <div className="service-body"><h3>Home Cleaning</h3><span className="arrow"><Icons.ArrowRight size={14}/></span></div>
+              </div>
+              <div className="service-card" onClick={handleBook}>
+                <div className="service-photo"><img src="/services/rental.png" alt="Car & Bike Rental" /></div>
+                <div className="service-body"><h3>Car &amp; Bike Rental</h3><span className="arrow"><Icons.ArrowRight size={14}/></span></div>
+              </div>
+              <div className="service-card" onClick={handleBook}>
+                <div className="service-photo"><img src="/services/driver.png" alt="Driver on Demand" /></div>
+                <div className="service-body"><h3>Driver on Demand</h3><span className="arrow"><Icons.ArrowRight size={14}/></span></div>
+              </div>
+              <div className="service-card" onClick={handleBook}>
+                <div className="service-photo"><img src="/services/laundry.png" alt="Laundry" /></div>
+                <div className="service-body"><h3>Laundry</h3><span className="arrow"><Icons.ArrowRight size={14}/></span></div>
+              </div>
+              <div className="service-card" onClick={handleBook}>
+                <div className="service-photo"><img src="/services/pest_control.png" alt="Pest Control" /></div>
+                <div className="service-body"><h3>Pest Control</h3><span className="arrow"><Icons.ArrowRight size={14}/></span></div>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* TRUST ARCHITECTURE */}
+        <section id="trust">
+          <div className="wrap">
+            <Reveal className="section-head">
+              <span className="section-eyebrow">Why ALLIDO is different</span>
+              <h2>We didn't build an open marketplace. We built a chain of accountability.</h2>
+              <p>Most service apps let anyone with a smartphone list themselves as a professional. ALLIDO doesn't. Every worker on the platform is brought on, vetted and managed by a dealer — a local operator who stakes their reputation on the team they field.</p>
+            </Reveal>
+
+            <div className="arch-grid">
+              <Reveal className="arch-list">
+                <div className="arch-item">
+                  <span className="arch-num mono">01</span>
                   <div>
-                    <b>{rev.name}</b>
-                    <span>{rev.loc}</span>
+                    <h4>Workers can't self-list</h4>
+                    <p>There's no open sign-up for workers. Every profile is created and ID-verified by a dealer who has met them in person before they ever appear in the system.</p>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-      </section>
+                <div className="arch-item">
+                  <span className="arch-num mono">02</span>
+                  <div>
+                    <h4>Bookings go to a dealer, not a queue</h4>
+                    <p>Your job is reviewed by a human who assigns it to the right person for the task — not an algorithm matching you to the nearest available stranger.</p>
+                  </div>
+                </div>
+                <div className="arch-item">
+                  <span className="arch-num mono">03</span>
+                  <div>
+                    <h4>Contact stays private until assigned</h4>
+                    <p>A worker's number is never shared with a customer before the dealer confirms the assignment, and workers never bypass the dealer to deal directly.</p>
+                  </div>
+                </div>
+                <div className="arch-item">
+                  <span className="arch-num mono">04</span>
+                  <div>
+                    <h4>One rating, one responsible party</h4>
+                    <p>Every job carries a rating. A poor review reaches the dealer directly and follows the worker's trust score — not lost in an anonymous review feed.</p>
+                  </div>
+                </div>
+              </Reveal>
 
-      {/* FINAL CTA */}
-      <section className="final-cta">
-        <div className="wrap">
-          <Reveal as="h2">Something needs fixing.<br/>Let's get someone over.</Reveal>
-          <Reveal as="p" style={{ transitionDelay: '.1s' }}>Average match time under 2 minutes. Anywhere we operate.</Reveal>
-          <Reveal className="final-ctas" style={{ transitionDelay: '.2s' }}>
-            <a href="#book" onClick={handleBook} className="btn btn-primary btn-lg">Book a service now</a>
-            <a href="#operators" onClick={handlePartner} className="btn btn-dark btn-lg">Become a partner</a>
-          </Reveal>
-        </div>
-      </section>
+              <Reveal className="arch-diagram">
+                <div className="chain-wrap" role="img" aria-label="Diagram showing the accountability chain">
+                  <svg className="chain-svg" viewBox="0 0 460 460" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <path id="chainArc" d="M 100 340 A 220 220 0 0 1 360 340" fill="none"/>
+                    </defs>
+                    <line x1="118" y1="118" x2="230" y2="230" stroke="var(--line-strong)" strokeWidth="1.5" strokeDasharray="4 6"/>
+                    <line x1="342" y1="118" x2="230" y2="230" stroke="var(--line-strong)" strokeWidth="1.5" strokeDasharray="4 6"/>
+                    <line x1="230" y1="230" x2="230" y2="360" stroke="var(--line-strong)" strokeWidth="1.5" strokeDasharray="4 6"/>
+
+                    {/* Customer seal */}
+                    <g transform="translate(118,118) rotate(-6)">
+                      <circle r="52" fill="var(--surface)" stroke="var(--line)" strokeWidth="1.5"/>
+                      <circle r="44" fill="none" stroke="var(--terracotta)" strokeWidth="1.4" strokeDasharray="2.4 3.4"/>
+                      <text textAnchor="middle" y="-4" fontFamily="IBM Plex Mono" fontSize="9" fill="var(--ink-faint)" letterSpacing="1">STEP 01</text>
+                      <text textAnchor="middle" y="14" fontFamily="Fraunces" fontWeight="600" fontSize="15" fill="var(--ink)">Customer</text>
+                    </g>
+
+                    {/* Dealer seal */}
+                    <g transform="translate(230,230)">
+                      <circle r="64" fill="var(--ink)"/>
+                      <circle r="54" fill="none" stroke="var(--mint)" strokeWidth="1.6" strokeDasharray="2.6 3.6"/>
+                      <text textAnchor="middle" y="-8" fontFamily="IBM Plex Mono" fontSize="9" fill="var(--surface)" opacity="0.6" letterSpacing="1">VERIFIES + ASSIGNS</text>
+                      <text textAnchor="middle" y="14" fontFamily="Fraunces" fontWeight="600" fontSize="17" fill="var(--surface)">Dealer</text>
+                    </g>
+
+                    {/* Worker seal */}
+                    <g transform="translate(342,118) rotate(6)">
+                      <circle r="52" fill="var(--surface)" stroke="var(--line)" strokeWidth="1.5"/>
+                      <circle r="44" fill="none" stroke="var(--terracotta)" strokeWidth="1.4" strokeDasharray="2.4 3.4"/>
+                      <text textAnchor="middle" y="-4" fontFamily="IBM Plex Mono" fontSize="9" fill="var(--ink-faint)" letterSpacing="1">STEP 02</text>
+                      <text textAnchor="middle" y="14" fontFamily="Fraunces" fontWeight="600" fontSize="15" fill="var(--ink)">Worker</text>
+                    </g>
+
+                    {/* Completed seal */}
+                    <g transform="translate(230,360)">
+                      <circle r="46" fill="var(--mint-tint)" stroke="var(--mint)" strokeWidth="1.5"/>
+                      <path d="M -12 0 L -3 10 L 14 -12" fill="none" stroke="var(--mint-deep)" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"/>
+                      <text textAnchor="middle" y="34" fontFamily="IBM Plex Mono" fontSize="9.5" fill="var(--ink-soft)" letterSpacing="0.5">JOB COMPLETE &amp; RATED</text>
+                    </g>
+                  </svg>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
+        {/* COMMITMENTS */}
+        <section className="band-mint">
+          <div className="wrap">
+            <Reveal className="section-head">
+              <span className="section-eyebrow">Our commitments</span>
+              <h2>What we promise every time you book.</h2>
+            </Reveal>
+            <Reveal className="commit-grid">
+              <div className="commit-card">
+                <div className="commit-icon"><Icons.ShieldCheck size={18}/></div>
+                <h4>Verified before dispatch</h4>
+                <p>Aadhaar or Voter ID checked by the dealer for every worker, before their first job.</p>
+              </div>
+              <div className="commit-card">
+                <div className="commit-icon"><Icons.Clock size={18}/></div>
+                <h4>Under 45 minutes</h4>
+                <p>Our target time from a confirmed booking to a worker being assigned and en route.</p>
+              </div>
+              <div className="commit-card">
+                <div className="commit-icon"><Icons.Banknote size={18}/></div>
+                <h4>Transparent pricing</h4>
+                <p>Visit charges shown upfront. Labour and material costs agreed with you on-site — no surprises.</p>
+              </div>
+              <div className="commit-card">
+                <div className="commit-icon"><Icons.Star size={18}/></div>
+                <h4>Every rating reviewed</h4>
+                <p>A rating of two stars or below alerts the dealer immediately for follow-up and, if needed, suspension.</p>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* DEALERS */}
+        <section id="dealers">
+          <div className="wrap">
+            <Reveal className="dealer-section">
+              <div>
+                <span className="section-eyebrow">For local operators</span>
+                <h2>Bring your team of workers. Run them on ALLIDO.</h2>
+                <p>If you already manage a group of trusted plumbers, electricians, drivers or cleaners, ALLIDO gives you a steady stream of bookings and a dashboard built for a basic Android phone — no office, no call centre required.</p>
+                <ul className="dealer-list">
+                  <li><Icons.Check size={16}/> Live booking feed with customer, address and time slot</li>
+                  <li><Icons.Check size={16}/> One-tap worker assignment and reassignment</li>
+                  <li><Icons.Check size={16}/> Full worker roster: skills, ID status, ratings, job history</li>
+                  <li><Icons.Check size={16}/> Daily and monthly earnings reports by category</li>
+                </ul>
+              </div>
+              <div className="dealer-card">
+                <form onSubmit={(e) => { e.preventDefault(); handlePartner(e); }}>
+                  <div className="field">
+                    <label htmlFor="d-name">Your name</label>
+                    <input id="d-name" type="text" placeholder="Full name" required />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="d-phone">Phone number</label>
+                    <input id="d-phone" type="tel" placeholder="10-digit mobile number" required />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="d-area">Area of operation</label>
+                    <input id="d-area" type="text" placeholder="e.g. Suri town, Rajbari area" required />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="d-workers">Workers you currently manage</label>
+                    <select id="d-workers">
+                      <option>1–5</option>
+                      <option>6–15</option>
+                      <option>16–30</option>
+                      <option>30+</option>
+                    </select>
+                  </div>
+                  <button type="submit" className="btn btn-mint" style={{width: '100%', justifyContent: 'center'}}>Sign up to partner</button>
+                </form>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ACCESS / DOWNLOAD */}
+        <section id="access" className="band">
+          <div className="wrap">
+            <Reveal className="section-head">
+              <span className="section-eyebrow">Get the app</span>
+              <h2>Available wherever you are in Suri.</h2>
+              <p>The Android app is our primary experience. No app store on your device? Use the web app straight from your browser — no install needed.</p>
+            </Reveal>
+            <Reveal className="access-grid">
+              <div className="access-card">
+                <div className="plat-icon"><Icons.Smartphone size={22}/></div>
+                <h3>Android</h3>
+                <p>Our primary app — built first, updated first, and covering the widest range of devices in Suri.</p>
+                <span className="status-tag">Available now</span>
+              </div>
+              <div className="access-card">
+                <div className="plat-icon"><Icons.Monitor size={22}/></div>
+                <h3>Web app</h3>
+                <p>No installation required. Open it in any mobile or desktop browser and book in under a minute.</p>
+                <span className="status-tag">Available now</span>
+              </div>
+              <div className="access-card">
+                <div className="plat-icon"><Icons.Apple size={22}/></div>
+                <h3>iOS</h3>
+                <p>Coming as demand grows — join early access and we'll notify you the moment it's ready.</p>
+                <span className="status-tag soon">Coming soon</span>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* COVERAGE */}
+        <section id="coverage">
+          <div className="wrap">
+            <div className="coverage-grid">
+              <Reveal>
+                <span className="section-eyebrow">Coverage</span>
+                <h2 style={{fontSize: 'clamp(26px,3vw,36px)', maxWidth: 420}}>Starting in Suri. Built to expand across Birbhum.</h2>
+                <p style={{marginTop: 16, color: 'var(--ink-soft)', fontSize: 15.5, lineHeight: 1.65, maxWidth: 440}}>We launch one city at a time, on purpose. A new city only opens once we've onboarded a dealer we trust and a starting roster of verified workers.</p>
+
+                <div className="coverage-list" style={{marginTop: 36}}>
+                  <div className="coverage-row">
+                    <div><div className="city">Suri</div><div className="region">District HQ, Birbhum — launch city</div></div>
+                    <span className="status-tag">Live</span>
+                  </div>
+                  <div className="coverage-row">
+                    <div><div className="city">Bolpur</div><div className="region">Birbhum — next in the expansion plan</div></div>
+                    <span className="status-tag soon">Planned</span>
+                  </div>
+                  <div className="coverage-row">
+                    <div><div className="city">Rampurhat</div><div className="region">Birbhum — next in the expansion plan</div></div>
+                    <span className="status-tag soon">Planned</span>
+                  </div>
+                </div>
+              </Reveal>
+
+              <Reveal className="coverage-map" aria-hidden="true">
+                <div className="pin">
+                  <div className="pin-dot"></div>
+                  <div className="pin-label">Suri — live</div>
+                </div>
+                <div className="pin-next" style={{top: '24%', left: '68%'}}>
+                  <div className="pin-dot-sm"></div>
+                  <div className="pin-label">Bolpur</div>
+                </div>
+                <div className="pin-next" style={{top: '66%', left: '22%'}}>
+                  <div className="pin-dot-sm"></div>
+                  <div className="pin-label">Rampurhat</div>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA BANNER */}
+        <section>
+          <div className="wrap">
+            <Reveal className="cta-banner">
+              <h2>Something needs fixing. Let's get someone over.</h2>
+              <p>Average match time under 2 minutes. Anywhere we operate.</p>
+              <div className="hero-ctas">
+                <a href="#book" onClick={handleBook} className="btn btn-mint">Book a service now</a>
+                <a href="#dealers" onClick={handlePartner} className="btn btn-ghost" style={{borderColor: 'rgba(255,255,255,0.2)', color: '#fff'}}>Become a partner</a>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+      </main>
 
       {/* FOOTER */}
-      <footer className="footer">
+      <footer>
         <div className="wrap">
-          <div className="footer-grid">
+          <div className="footer-top">
             <div>
-              <a href="#top" className="brand" style={{ color: '#fff' }}>
-                <span className="brand-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4 13L12 5L20 13M7 11V19H17V11" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </span>
+              <div className="footer-brand">
+                <div style={{width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, var(--mint) 0%, var(--mint-deep) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  <Icons.ShieldCheck color="#fff" size={16} />
+                </div>
                 ALLIDO
-              </a>
-              <p className="footer-brand-tag">On-demand, hyper-local home services. Verified pros, tracked live, booked in minutes.</p>
-              <div className="footer-social">
-                <a href="#" aria-label="Instagram">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="#fff"/></svg>
-                </a>
-                <a href="#" aria-label="Twitter">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8"><path d="M4 4L20 20M20 4L4 20"/></svg>
-                </a>
-                <a href="#" aria-label="LinkedIn">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="8" y1="11" x2="8" y2="16"/><line x1="8" y1="8" x2="8" y2="8.2"/><line x1="12" y1="11" x2="12" y2="16"/><path d="M12 13c0-1.2 1-2 2-2s2 .8 2 2v3"/></svg>
-                </a>
               </div>
+              <p>ALLIDO connects households in Suri, Birbhum with dealer-verified plumbers, electricians, cleaners, drivers and more. Every worker is vetted and every job is accountable.</p>
             </div>
-
+            
             <div className="footer-col">
-              <h4>Services</h4>
-              <a href="#services">Plumbing</a>
-              <a href="#services">Electrical</a>
-              <a href="#services">AC Repair</a>
-              <a href="#services">Cleaning</a>
+              <h5>Services</h5>
+              <ul>
+                <li><a href="#services">Plumbing</a></li>
+                <li><a href="#services">Electrical</a></li>
+                <li><a href="#services">Cleaning</a></li>
+                <li><a href="#services">AC Repair</a></li>
+              </ul>
             </div>
-
             <div className="footer-col">
-              <h4>Company</h4>
-              <a href="#">About</a>
-              <a href="#operators">Become a partner</a>
-              <a href="#">Careers</a>
-              <a href="#">Press</a>
+              <h5>Company</h5>
+              <ul>
+                <li><a href="#how-it-works">How it works</a></li>
+                <li><a href="#dealers">Partner with us</a></li>
+                <li><a href="#trust">Trust &amp; safety</a></li>
+              </ul>
             </div>
-
             <div className="footer-col">
-              <h4>Support</h4>
-              <a href="#">Help center</a>
-              <a href="#">Safety</a>
-              <a href="#">Contact us</a>
-              <a href="#">Trust &amp; verification</a>
+              <h5>Legal</h5>
+              <ul>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+                <li><a href="#">Refund Policy</a></li>
+              </ul>
             </div>
-
-            <div className="footer-newsletter">
-              <h4>Stay in the loop</h4>
-              <p style={{ fontSize: '.84rem', color: '#8A9893' }}>New cities, operator spots, seasonal offers.</p>
-              <form onSubmit={e => e.preventDefault()} style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                <input type="email" placeholder="you@email.com" required aria-label="Email address" />
-                <button type="submit" className="sub-btn">Join</button>
-              </form>
+            <div className="footer-col">
+              <h5>Contact</h5>
+              <ul>
+                <li><a href="mailto:hello@allido.com">hello@allido.com</a></li>
+                <li><a href="#">Help Center</a></li>
+              </ul>
             </div>
           </div>
-
           <div className="footer-bottom">
-            <span>© 2026 ALLIDO Technologies. All rights reserved.</span>
-            <div className="footer-legal">
-              <a href="#">Privacy</a>
-              <a href="#">Terms</a>
-              <a href="#">Sitemap</a>
+            <div>&copy; 2026 ALLIDO. All rights reserved.</div>
+            <div style={{display: 'flex', gap: 16}}>
+              <span>Built for Birbhum.</span>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { useAuth } from './context/AuthContext';
+import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 
@@ -7,20 +8,27 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [isLogin, setIsLogin] = useState(true);
+  const { signIn } = useAuth();
 
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
     
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) alert(error.message);
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) alert(error.message);
-      else alert('Check your email for the login link!');
+    try {
+      if (isLogin) {
+        const res = await axios.post('http://localhost:5000/api/customer/login', { email, password });
+        signIn(res.data.token, res.data.user);
+      } else {
+        const res = await axios.post('http://localhost:5000/api/customer/register', { name, email, password });
+        signIn(res.data.token, res.data.user);
+        alert('Registration successful!');
+      }
+    } catch (err) {
+      alert(err.response?.data?.error || 'Authentication failed');
     }
+    
     setLoading(false);
   };
 
@@ -52,6 +60,18 @@ export default function Auth() {
         </div>
 
         <form onSubmit={handleAuth} className="flex flex-col gap-4">
+          {!isLogin && (
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="fi pl-4"
+                required
+              />
+            </div>
+          )}
           <div className="relative">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
             <input

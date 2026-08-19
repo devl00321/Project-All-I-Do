@@ -35,7 +35,18 @@ export default function Auth({ onLogin }) {
     const d = val.replace(/\D/,"");
     const n = [...otp]; n[i] = d; setOtp(n);
     if (d && i < 3) refs.current[i+1]?.focus();
-    if (n.every(v=>v)) { setLoading(true); setTimeout(()=>{setLoading(false);setStep("name");},700); }
+    if (n.every(v=>v)) { 
+      setLoading(true); 
+      setTimeout(()=>{
+        setLoading(false);
+        // Simulate existing user if phone is exactly "9876543210"
+        if (phone === "9876543210") {
+          onLogin("Amit", phone, false);
+        } else {
+          setStep("name");
+        }
+      },700); 
+    }
   };
 
   return (
@@ -130,7 +141,7 @@ export default function Auth({ onLogin }) {
               </div>
 
               <button className="btn-full btn-mint" disabled={!name.trim()||loading}
-                onClick={()=>{setLoading(true);setTimeout(()=>{setLoading(false);onLogin(name, phone);},600);}}>
+                onClick={()=>{setLoading(true);setTimeout(()=>{setLoading(false);onLogin(name, phone, true);},600);}}>
                 {loading ? <Spinner color="#fff"/> : "Enter Dashboard →"}
               </button>
             </div>

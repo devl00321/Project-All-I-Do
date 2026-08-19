@@ -208,7 +208,7 @@ export default function LiveTrack({ bookingId }) {
               If the worker is delayed or you have issues, contact the area dealer directly.
             </div>
             <button style={{
-              width: "100%", background: "#fff", color: B.err, border: `1.5px solid ${B.err}`,
+              width: "100%", background: 'var(--surface)', color: B.err, border: `1.5px solid ${B.err}`,
               fontWeight: 700, fontSize: "13px", padding: "10px 0", borderRadius: "12px",
               cursor: "pointer", transition: "all .2s"
             }}>

@@ -10,8 +10,8 @@ const requireAuth = (req, res, next) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    // Verify the JWT token using the Supabase JWT secret
-    const decoded = jwt.verify(token, process.env.SUPABASE_JWT_SECRET);
+    // Verify the JWT token using the custom JWT secret
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // Add the user data to the request object so subsequent handlers can use it
     req.user = decoded;

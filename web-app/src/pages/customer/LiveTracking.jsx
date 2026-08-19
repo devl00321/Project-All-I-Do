@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Bike, Car, Compass, Phone, Shield, Star, CheckCircle2, User, Loader2 } from 'lucide-react';
 import { B } from '../../constants';
 import gsap from 'gsap';
+import { io } from 'socket.io-client';
 
 export default function LiveTracking({ activeBooking, onCancel, onComplete }) {
   const [status, setStatus] = useState("confirmed"); // confirmed, assigned, en_route, arrived, in_progress, completed
@@ -135,148 +136,58 @@ export default function LiveTracking({ activeBooking, onCancel, onComplete }) {
     }
   }, []);
 
-  // Dispatch & Ride Simulator Timeline
+  // Real-Time Socket Connection
   useEffect(() => {
-    // 0s-3s: Confirmed
-    // 3s: Assigned
-    const tAssigned = setTimeout(() => {
-      setStatus("assigned");
-      setEta(enRouteDurRef.current);
-      setDistanceLeft(enRouteDistRef.current);
-      
-      // Add partner marker at starting position
-      if (window.L && mapInstanceRef.current) {
+    const socket = io('http://localhost:5000');
+    
+    // If activeBooking has an id or bookingId, join its room
+    const bId = activeBooking?.bookingId || activeBooking?.id;
+    if (bId) {
+      socket.emit('join-booking', bId);
+    }
+
+    socket.on('booking-status-changed', (data) => {
+      const newStatus = data.status.toLowerCase();
+      setStatus(newStatus);
+      if (newStatus === 'completed') {
+        setShowRating(true);
+      }
+    });
+
+    socket.on('location-updated', (data) => {
+      const { lat, lng } = data;
+      if (partnerMarkerRef.current && window.L) {
+        partnerMarkerRef.current.setLatLng([lat, lng]);
+      } else if (mapInstanceRef.current && window.L) {
+        // Create marker if it doesn't exist
         const pIcon = window.L.divIcon({
           className: 'custom-map-pin-partner',
           html: `<div style="background:#1E293B;color:#fff;width:32px;height:32px;border-radius:50%;border:2px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-size:14px">${isRide ? '🚗' : '🚴'}</div>`
         });
-        const startLoc = enRouteGeometryRef.current.length > 0 ? enRouteGeometryRef.current[0] : partnerStartCoords;
-        partnerMarkerRef.current = window.L.marker(startLoc, { icon: pIcon }).addTo(mapInstanceRef.current);
-        
-        // Draw route line from starting point to user
-        const pathCoords = enRouteGeometryRef.current.length > 0 ? enRouteGeometryRef.current : [partnerStartCoords, userCoords];
-        polylineRef.current = window.L.polyline(pathCoords, {
-          color: '#10B981',
-          weight: 4,
-          dashArray: '6, 6'
-        }).addTo(mapInstanceRef.current);
-
-        const group = new window.L.featureGroup([partnerMarkerRef.current, userMarkerRef.current]);
-        mapInstanceRef.current.fitBounds(group.getBounds().pad(0.2));
+        partnerMarkerRef.current = window.L.marker([lat, lng], { icon: pIcon }).addTo(mapInstanceRef.current);
       }
-    }, 3000);
-
-    // 5s: En Route
-    const tEnRoute = setTimeout(() => {
-      setStatus("en_route");
-    }, 5500);
-
-    // 14s: Arrived
-    const tArrived = setTimeout(() => {
-      setStatus("arrived");
-      setEta(0);
-      setDistanceLeft(0);
-      if (partnerMarkerRef.current) {
-        partnerMarkerRef.current.setLatLng(userCoords);
-      }
-      if (polylineRef.current) {
-        polylineRef.current.remove();
-        polylineRef.current = null;
-      }
-    }, 14500);
-
-    // 17s: In Progress
-    const tInProgress = setTimeout(() => {
-      setStatus("in_progress");
-      // For rides, once arrived at pickup, we transition to moving towards destination
-      if (isRide && window.L && mapInstanceRef.current && partnerMarkerRef.current && destCoords) {
-        // Draw route line to destination
-        const rideGeometry = activeBooking?.details?.rideDetails?.routeGeometry || [userCoords, destCoords];
-        polylineRef.current = window.L.polyline(rideGeometry, {
-          color: '#3B82F6',
-          weight: 4,
-          dashArray: '6, 6'
-        }).addTo(mapInstanceRef.current);
-
-        const group = new window.L.featureGroup([partnerMarkerRef.current, userMarkerRef.current]);
-        mapInstanceRef.current.fitBounds(group.getBounds().pad(0.2));
-      }
-    }, 17500);
-
-    // 25s: Completed (Open Rating Modal)
-    const tCompleted = setTimeout(() => {
-      setStatus("completed");
-      setShowRating(true);
-    }, 25000);
+      
+      // Basic ETA recalculation
+      const dist = calculateHaversine([lat, lng], userCoords);
+      setDistanceLeft(Math.round(dist * 10) / 10);
+      setEta(Math.max(1, Math.ceil(dist * 2.5)));
+    });
 
     return () => {
-      clearTimeout(tAssigned);
-      clearTimeout(tEnRoute);
-      clearTimeout(tArrived);
-      clearTimeout(tInProgress);
-      clearTimeout(tCompleted);
+      socket.disconnect();
     };
-  }, []);
+  }, [activeBooking, isRide, userCoords]);
 
-  // En Route Marker Movement Animation
-  useEffect(() => {
-    if (status === 'en_route' && partnerMarkerRef.current && window.L) {
-      let currentProg = 0;
-      const interval = setInterval(() => {
-        currentProg += 2.5; // fits inside 9s timeline (45 steps at 200ms)
-        if (currentProg >= 100) {
-          clearInterval(interval);
-          partnerMarkerRef.current.setLatLng(userCoords);
-          setProgress(100);
-          return;
-        }
-
-        setProgress(currentProg);
-
-        const ratio = currentProg / 100;
-        const path = enRouteGeometry.length > 0 ? enRouteGeometry : [partnerStartCoords, userCoords];
-        const index = Math.min(path.length - 1, Math.floor(ratio * path.length));
-        const currentPos = path[index];
-        partnerMarkerRef.current.setLatLng(currentPos);
-
-        const remainingDist = getRemainingDistance(path, index);
-        setDistanceLeft(Math.round(remainingDist * 10) / 10);
-        setEta(Math.max(1, Math.ceil(remainingDist * 2.5)));
-      }, 200);
-
-      return () => clearInterval(interval);
-    }
-  }, [status, enRouteGeometry]);
-
-  // Ride In-Progress Marker Movement Animation towards drop coords
-  useEffect(() => {
-    if (status === 'in_progress' && isRide && partnerMarkerRef.current && window.L && destCoords) {
-      const rideGeometry = activeBooking?.details?.rideDetails?.routeGeometry || [userCoords, destCoords];
-      let currentProg = 0;
-      const interval = setInterval(() => {
-        currentProg += 2.5; // fits inside 7.5s timeline (37 steps at 200ms)
-        if (currentProg >= 100) {
-          clearInterval(interval);
-          partnerMarkerRef.current.setLatLng(destCoords);
-          setProgress(100);
-          return;
-        }
-
-        setProgress(currentProg);
-
-        const ratio = currentProg / 100;
-        const index = Math.min(rideGeometry.length - 1, Math.floor(ratio * rideGeometry.length));
-        const currentPos = rideGeometry[index];
-        partnerMarkerRef.current.setLatLng(currentPos);
-
-        const remainingDist = getRemainingDistance(rideGeometry, index);
-        setDistanceLeft(Math.round(remainingDist * 10) / 10);
-        setEta(Math.max(1, Math.ceil(remainingDist * 2.5)));
-      }, 200);
-
-      return () => clearInterval(interval);
-    }
-  }, [status]);
+  const calculateHaversine = (p1, p2) => {
+    const R = 6371; // km
+    const dLat = (p2[0] - p1[0]) * Math.PI / 180;
+    const dLon = (p2[1] - p1[1]) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(p1[0]*Math.PI/180) * Math.cos(p2[0]*Math.PI/180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
 
   // GSAP animations on status change
   useEffect(() => {
@@ -470,7 +381,7 @@ export default function LiveTracking({ activeBooking, onCancel, onComplete }) {
         <div ref={mapContainerRef} style={{ width: '100%', height: '100%', zIndex: 1 }}></div>
 
         {/* Map Safety badge */}
-        <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: '#fff', border: `1.5px solid ${B.brd}`, borderRadius: '12px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)', zIndex: 10 }}>
+        <div style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'var(--surface)', border: `1.5px solid ${B.brd}`, borderRadius: '12px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)', zIndex: 10 }}>
           <Shield size={16} color={B.mint} />
           <span style={{ fontSize: '11px', fontWeight: 700, color: B.ink }}>Live Route Encryption</span>
         </div>
@@ -479,7 +390,7 @@ export default function LiveTracking({ activeBooking, onCancel, onComplete }) {
       {/* RATING & COMPLETION OVERLAY */}
       {showRating && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 46, 37, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-          <div className="card animate-fade-in" style={{ padding: '36px', width: '450px', background: '#fff', textAlign: 'center', boxShadow: '0 20px 50px rgba(0,0,0,0.25)' }}>
+          <div className="card animate-fade-in" style={{ padding: '36px', width: '450px', background: 'var(--surface)', textAlign: 'center', boxShadow: '0 20px 50px rgba(0,0,0,0.25)' }}>
             <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: `${B.mint}15`, color: B.mint, display: 'flex', alignItems: 'center', justifyCentert: 'center', margin: '0 auto 16px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <CheckCircle2 size={32} />
             </div>

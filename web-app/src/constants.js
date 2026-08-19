@@ -1,16 +1,16 @@
 export const B = {
-  mint:     "#10B981",
-  mintDark: "#059669",
-  mintDeep: "#064E3B",
-  mintLight:"#D1FAE5",
-  mintFog:  "#ECFDF5",
+  mint:     "#51d09f",
+  mintDark: "#3ebd8b",
+  mintDeep: "#2da374",
+  mintLight:"#e6f9f2",
+  mintFog:  "#f3fdf9",
   teal:     "#0D9488",
   white:    "#FFFFFF",
   bg:       "#F8F9FA",
   surface:  "#FFFFFF",
   brd:      "#E2E8F0",
   brdMid:   "#CBD5E1",
-  ink:      "#1E293B",
+  ink:      "#242e47",
   inkMid:   "#334155",
   inkLight: "#475569",
   muted:    "#64748B",
@@ -23,18 +23,18 @@ export const B = {
 };
 
 export const SERVICES = [
-  { id:"plumber",      label:"Plumber",       emoji:"🔧", icon:"Wrench", color:"#3B82F6", eta:"30–45 min", basePrice: 250, placeholder: "e.g. Bathroom tap is leaking continuously, water dripping from the joint...", desc:"Leak fixes, pipe work, faucet replacement" },
-  { id:"electrician",  label:"Electrician",   emoji:"⚡", icon:"Zap", color:"#F59E0B", eta:"25–40 min", basePrice: 200, placeholder: "e.g. Wall socket is sparking when turning on AC, or ceiling fan is not working...", desc:"Wiring, switches, MCB, fan installation" },
-  { id:"carpenter",    label:"Carpenter",     emoji:"🪚", icon:"Hammer", color:"#8B5CF6", eta:"45–60 min", basePrice: 300, placeholder: "e.g. Wooden wardrobe door hinge is broken and needs to be replaced...", desc:"Furniture repair, door fitting, shelves" },
-  { id:"ac_repair",    label:"AC Repair",     emoji:"❄️", icon:"Wind", color:"#0EA5E9", eta:"40–55 min", basePrice: 400, placeholder: "e.g. AC is running but not cooling, or water is dripping from indoor unit...", desc:"Gas refill, servicing, installation" },
-  { id:"cleaning",     label:"Cleaning",      emoji:"🧹", icon:"Sparkles", color:"#10B981", eta:"60–90 min", basePrice: 500, placeholder: "e.g. Deep cleaning of kitchen cabinets and tiles, bathroom deep clean...", desc:"Deep clean, sofa, bathroom, kitchen" },
-  { id:"car_rental",   label:"Car/Bike Rental",emoji:"🚗", icon:"Car", color:"#F97316", eta:"20–30 min", basePrice: 0, placeholder: "", desc:"Self-drive or with driver, hourly/daily" },
-  { id:"driver",       label:"Driver",        emoji:"🚐", icon:"Compass", color:"#EC4899", eta:"15–25 min", basePrice: 0, placeholder: "", desc:"Personal driver on demand, trained & verified" },
-  { id:"laundry",      label:"Laundry",       emoji:"👕", icon:"Shirt", color:"#6366F1", eta:"Same day",  basePrice: 150, placeholder: "e.g. Need 5 shirts washed and ironed, and 2 winter jackets dry cleaned...",  desc:"Wash, iron, dry clean, pickup & delivery" },
-  { id:"pest_control", label:"Pest Control",  emoji:"🦟", icon:"Bug", color:"#14B8A6", eta:"60–90 min", basePrice: 650, placeholder: "e.g. Termite control needed in master bedroom wooden cupboards...", desc:"Cockroaches, termites, mosquitoes, rats" },
-  { id:"mechanic",     label:"Mechanic",      emoji:"🔧", icon:"Wrench", color:"#4F46E5", eta:"30–50 min", basePrice: 350, placeholder: "e.g. Bike engine making a rattling noise, or car starter motor not turning over...", desc:"Car & bike repair, general servicing" },
-  { id:"emergency_fuel", label:"Emergency Fuel",emoji:"⛽", icon:"Fuel", color:"#EF4444", eta:"15–25 min", basePrice: 180, placeholder: "e.g. Ran out of fuel near Lal Bazar, need 5 liters of Petrol delivered...", desc:"Fuel delivery (Petrol/Diesel) anywhere" },
-  { id:"porter",       label:"Porter",        emoji:"📦", icon:"Truck", color:"#10B981", eta:"20–40 min", basePrice: 280, placeholder: "e.g. Moving 3 heavy cardboard boxes and a single mattress to 2nd floor...", desc:"Local goods shifting, heavy packing" }
+  { id:"plumber",      label:"Plumber",       image:"/images/plumber.png", icon:"Wrench", color:"#3B82F6", eta:"30–45 min", basePrice: 250, placeholder: "e.g. Bathroom tap is leaking continuously, water dripping from the joint...", desc:"Leak fixes, pipe work, faucet replacement" },
+  { id:"electrician",  label:"Electrician",   image:"/images/electrician.png", icon:"Zap", color:"#F59E0B", eta:"25–40 min", basePrice: 200, placeholder: "e.g. Wall socket is sparking when turning on AC, or ceiling fan is not working...", desc:"Wiring, switches, MCB, fan installation" },
+  { id:"carpenter",    label:"Carpenter",     image:"/images/carpenter.png", icon:"Hammer", color:"#8B5CF6", eta:"45–60 min", basePrice: 300, placeholder: "e.g. Wooden wardrobe door hinge is broken and needs to be replaced...", desc:"Furniture repair, door fitting, shelves" },
+  { id:"ac_repair",    label:"AC Repair",     image:"/images/ac_repair.png", icon:"Wind", color:"#0EA5E9", eta:"40–55 min", basePrice: 400, placeholder: "e.g. AC is running but not cooling, or water is dripping from indoor unit...", desc:"Gas refill, servicing, installation" },
+  { id:"cleaning",     label:"Cleaning",      image:"/images/cleaning.png", icon:"Sparkles", color:"#10B981", eta:"60–90 min", basePrice: 500, placeholder: "e.g. Deep cleaning of kitchen cabinets and tiles, bathroom deep clean...", desc:"Deep clean, sofa, bathroom, kitchen" },
+  { id:"car_rental",   label:"Car/Bike Rental",image:"/images/car_rental.png", icon:"Car", color:"#F97316", eta:"20–30 min", basePrice: 0, placeholder: "", desc:"Self-drive or with driver, hourly/daily" },
+  { id:"driver",       label:"Driver",        image:"/images/driver.png", icon:"Compass", color:"#EC4899", eta:"15–25 min", basePrice: 0, placeholder: "", desc:"Personal driver on demand, trained & verified" },
+  { id:"laundry",      label:"Laundry",       image:"/images/laundry.png", icon:"Shirt", color:"#6366F1", eta:"Same day",  basePrice: 150, placeholder: "e.g. Need 5 shirts washed and ironed, and 2 winter jackets dry cleaned...",  desc:"Wash, iron, dry clean, pickup & delivery" },
+  { id:"pest_control", label:"Pest Control",  image:"/images/pest_control.png", icon:"Bug", color:"#14B8A6", eta:"60–90 min", basePrice: 650, placeholder: "e.g. Termite control needed in master bedroom wooden cupboards...", desc:"Cockroaches, termites, mosquitoes, rats" },
+  { id:"mechanic",     label:"Mechanic",      image:"/images/mechanic.png", icon:"Wrench", color:"#4F46E5", eta:"30–50 min", basePrice: 350, placeholder: "e.g. Bike engine making a rattling noise, or car starter motor not turning over...", desc:"Car & bike repair, general servicing" },
+  { id:"emergency_fuel", label:"Emergency Fuel",image:"/images/emergency_fuel.png", icon:"Fuel", color:"#EF4444", eta:"15–25 min", basePrice: 180, placeholder: "e.g. Ran out of fuel near Lal Bazar, need 5 liters of Petrol delivered...", desc:"Fuel delivery (Petrol/Diesel) anywhere" },
+  { id:"porter",       label:"Porter",        image:"/images/porter.png", icon:"Truck", color:"#10B981", eta:"20–40 min", basePrice: 280, placeholder: "e.g. Moving 3 heavy cardboard boxes and a single mattress to 2nd floor...", desc:"Local goods shifting, heavy packing" }
 ];
 
 export const STATS = [

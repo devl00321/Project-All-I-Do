@@ -23,6 +23,10 @@ export default function useSocket(bookingId, onLocationUpdate, onStatusChange) {
       if (onLocationUpdate) onLocationUpdate(data);
     });
 
+    socket.on('worker-location-changed', (data) => {
+      if (onLocationUpdate) onLocationUpdate(data);
+    });
+
     socket.on('booking-status-changed', (data) => {
       if (onStatusChange) onStatusChange(data);
     });

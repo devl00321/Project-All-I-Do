@@ -37,6 +37,18 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
     },
+    dealerId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Users',
+        key: 'id'
+      }
+    },
+    rating: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    }
   }, {
     timestamps: true,
   });

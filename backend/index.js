@@ -34,8 +34,8 @@ app.use('/api', apiRoutes);
 const Razorpay = require('razorpay');
 
 const razorpay = new Razorpay({
-  key_id: 'rzp_test_T2C2aD1TZMX8tV',
-  key_secret: 'TrYG8VGv7HD5gEQPogpL5ZmX'
+  key_id: 'rzp_test_TJGnkyQrNJ7A6F',
+  key_secret: 'NmjJkAlF32kG2CU6Da5vHTa4'
 });
 
 app.post('/api/create-razorpay-order', async (req, res) => {
@@ -80,23 +80,27 @@ if (db && db.sequelize) {
   db.sequelize.sync({ alter: true })
     .then(() => {
       console.log('Database synced successfully.');
-      server.listen(PORT, () => {
-        console.log(`ALLIDO Backend running on port ${PORT}`);
-      });
     })
     .catch(err => {
       console.error('Unable to connect to the database:', err);
+    })
+    .finally(() => {
+      server.listen(PORT, () => {
+        console.log(`ALLIDO Backend running on port ${PORT}`);
+      });
     });
 } else {
   sequelize.authenticate()
     .then(() => {
       console.log('Database connected successfully.');
-      server.listen(PORT, () => {
-        console.log(`ALLIDO Backend running on port ${PORT}`);
-      });
     })
     .catch(err => {
       console.error('Unable to connect to the database:', err);
+    })
+    .finally(() => {
+      server.listen(PORT, () => {
+        console.log(`ALLIDO Backend running on port ${PORT}`);
+      });
     });
 }
 

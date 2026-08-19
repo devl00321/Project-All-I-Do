@@ -1,42 +1,31 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { B, SERVICES, STATS } from '../../constants';
-import { Badge } from '../../components/Common';
 import * as Icons from 'lucide-react';
 import gsap from 'gsap';
 
-const ServiceIcon = ({ iconName, color, size = 24 }) => {
-  const IconComponent = Icons[iconName];
-  if (!IconComponent) return null;
-  return <IconComponent size={size} style={{ color }} />;
-};
+
 
 const SUGGESTIONS = [
   {
     id: "ac_repair",
     title: "Summer Special AC Servicing",
-    desc: "Blowing warm air? Professional sanitization & gas refilling at flat rates.",
+    desc: "Professional sanitization & gas refilling at flat rates.",
     badge: "15% OFF",
-    color: "#0EA5E9",
     actionText: "Book AC Repair",
-    icon: "Wind"
-  },
-  {
-    id: "driver",
-    title: "Verified Personal Driver",
-    desc: "Need a driver for shopping or outstation? Hire a professional in minutes.",
-    badge: "Top Rated",
-    color: "#EC4899",
-    actionText: "Book Ride Service",
-    icon: "Compass"
   },
   {
     id: "cleaning",
     title: "Deep Kitchen Cleaning",
-    desc: "Greasy chimney or dirty tiles? Get a thorough, sparkling chemical deep clean.",
+    desc: "Thorough, sparkling chemical deep clean for your kitchen.",
     badge: "Best Seller",
-    color: "#10B981",
     actionText: "Book Cleaning",
-    icon: "Sparkles"
+  },
+  {
+    id: "pest_control",
+    title: "Complete Pest Control",
+    desc: "Safeguard your home with our premium pest treatments.",
+    badge: "Top Rated",
+    actionText: "Book Pest Control",
   }
 ];
 
@@ -48,12 +37,10 @@ export default function Home({ onBook, onTab, hasActive, bookingHistory = [] }) 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline();
       tl.from(".home-banner-active", { opacity: 0, y: -20, duration: 0.4 })
-        .from(".search-section", { opacity: 0, y: 10, duration: 0.4 }, "-=0.2")
-        .from(".suggestions-section", { opacity: 0, y: 15, duration: 0.4 }, "-=0.2")
-        .from(".recent-section", { opacity: 0, y: 15, duration: 0.4 }, "-=0.3")
-        .from(".category-grid-title", { opacity: 0, y: 15, duration: 0.3 }, "-=0.3")
-        .from(".category-card", { opacity: 0, scale: 0.95, duration: 0.4, stagger: 0.04, ease: "power2.out" }, "-=0.2")
-        .from(".stat-card", { opacity: 0, y: 20, duration: 0.4, stagger: 0.08, ease: "power2.out" }, "-=0.2");
+        .from(".hero-content", { opacity: 0, y: 20, duration: 0.6, ease: "power3.out" })
+        .from(".categories-container", { opacity: 0, y: 30, duration: 0.5, ease: "power3.out" }, "-=0.4")
+        .from(".category-item", { opacity: 0, scale: 0.95, duration: 0.4, stagger: 0.05, ease: "power2.out" }, "-=0.2")
+        .from(".sections-animate", { opacity: 0, y: 20, duration: 0.5, stagger: 0.1, ease: "power2.out" }, "-=0.2");
     }, homeRef);
     return () => ctx.revert();
   }, []);
@@ -63,231 +50,248 @@ export default function Home({ onBook, onTab, hasActive, bookingHistory = [] }) 
     s.desc.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleInstantRide = () => {
-    const driverService = SERVICES.find(s => s.id === 'driver');
-    if (driverService) onBook(driverService);
-  };
-
-  const handleEmergencyRepair = () => {
-    const electricianService = SERVICES.find(s => s.id === 'electrician');
-    if (electricianService) onBook(electricianService);
-  };
-
   return (
-    <div className="page" ref={homeRef}>
+    <div className="min-h-screen pb-24" style={{ background: 'transparent' }} ref={homeRef}>
+      
       {/* Active Booking Banner */}
       {hasActive && (
-        <div className="home-banner-active mb-6">
+        <div className="home-banner-active sticky top-0 z-50 p-4">
           <button
             onClick={() => onTab("track")}
-            className="w-full bg-gradient-to-r from-mint to-mint-dark border-none rounded-2xl p-4 flex justify-between items-center cursor-pointer shadow-md hover:shadow-lg transition duration-200"
-            style={{ boxShadow: `0 6px 20px rgba(93, 202, 165, 0.25)` }}
+            className="w-full flex items-center justify-between p-4 rounded-xl shadow-lg cursor-pointer transition-transform hover:scale-[1.01]"
+            style={{ backgroundColor: 'var(--ink)' }}
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">🛠️</div>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                <Icons.Activity className="text-white" size={24} />
+              </div>
               <div className="text-left">
-                <div className="text-white font-bold text-[15px]">Active Booking in Progress</div>
-                <div className="text-white/80 text-[12px]">Your local service expert is en route. Tap to track live status.</div>
+                <div className="font-bold text-sm sm:text-base tracking-wide" style={{ color: 'var(--surface)' }}>Booking in Progress</div>
+                <div className="text-xs sm:text-sm mt-0.5" style={{ color: 'var(--surface)', opacity: 0.7 }}>Your professional is en route. Tap to track live.</div>
               </div>
             </div>
-            <div className="text-white font-bold text-[13px] bg-white/20 rounded-lg px-4 py-2 hover:bg-white/30 transition duration-150">
-              Track Live →
+            <div className="flex items-center gap-2 font-semibold text-sm px-4 py-2 rounded-lg" style={{ color: 'var(--surface)', background: 'rgba(255,255,255,0.1)' }}>
+              Track <Icons.ChevronRight size={16} />
             </div>
           </button>
         </div>
       )}
 
-      {/* Hero Header & Search Bar */}
-      <div className="search-section text-center max-w-2xl mx-auto mb-8">
-        <h1 className="text-3xl font-bold text-ink mb-2">Find Reliable Services in Suri</h1>
-        <p className="text-ink-light text-sm mb-6">Verified local professionals at your doorstep within 45 minutes.</p>
-        <div className="relative w-full shadow-sm">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg text-muted">🔍</span>
-          <input
-            type="text"
-            className="fi pl-12 pr-4 py-3.5 rounded-2xl text-[15px] border border-brd focus:border-mint"
-            placeholder="Search for plumber, electrician, AC repair..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      {/* Hero Section */}
+      <div 
+        className="relative w-full h-[380px] sm:h-[480px] flex flex-col justify-center items-center px-4"
+        style={{ 
+          backgroundImage: `url('/images/hero.png')`, 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center' 
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-[#242e47]/80 via-[#242e47]/50 to-[#242e47]/90"></div>
+        
+        <div className="hero-content relative z-10 w-full max-w-3xl text-center mt-[-40px]">
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-lg">
+            Professional Services, <br className="sm:hidden" />Delivered to You.
+          </h1>
+          <p className="text-base sm:text-lg text-white/90 mb-8 font-medium drop-shadow-md max-w-xl mx-auto">
+            Experience verified, top-tier professionals for every home need.
+          </p>
+          
+          <div className="relative w-full max-w-2xl mx-auto shadow-2xl rounded-2xl overflow-hidden flex items-center p-1.5 border-[4px] border-white/20" style={{ background: 'var(--surface)' }}>
+            <div className="pl-4" style={{ color: 'var(--inkLight)' }}>
+              <Icons.Search size={24} />
+            </div>
+            <input 
+              type="text" 
+              className="w-full pl-3 pr-4 py-3.5 sm:py-4 text-base sm:text-lg outline-none font-medium bg-transparent"
+              style={{ color: 'var(--ink)' }}
+              placeholder="Search for AC repair, plumbing, cleaning..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <button 
+              className="hidden sm:flex items-center justify-center px-8 py-3.5 rounded-xl font-bold text-white transition-colors"
+              style={{ backgroundColor: 'var(--mint)' }}
+            >
+              Search
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* SEARCH MODE vs HOME MODE */}
-      {search ? (
-        /* Category Discovery Grid for Searches */
-        <div className="mb-8">
-          <h2 className="category-grid-title text-[18px] font-bold text-ink mb-4 text-left">
-            Search Results ({filtered.length})
-          </h2>
+      {/* Main Content Container */}
+      <div className="max-w-6xl mx-auto px-4 -mt-16 sm:-mt-24 relative z-20">
+        
+        {/* Categories Section */}
+        <div className="categories-container rounded-2xl shadow-xl p-6 sm:p-8 mb-10 border" style={{ background: 'var(--surface)', borderColor: 'var(--brd)' }}>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl sm:text-2xl font-extrabold" style={{ color: 'var(--ink)' }}>
+              {search ? `Search Results (${filtered.length})` : 'Explore Premium Services'}
+            </h2>
+          </div>
+
           {filtered.length > 0 ? (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
               {filtered.map(s => (
-                <div
-                  key={s.id}
-                  onClick={() => onBook(s)}
-                  className="category-card"
+                <div 
+                  key={s.id} 
+                  onClick={() => onBook(s)} 
+                  className="category-item group cursor-pointer flex flex-col"
                 >
-                  <div
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center mb-1"
-                    style={{ backgroundColor: `${s.color}15`, border: `1.5px solid ${s.color}25` }}
-                  >
-                    <ServiceIcon iconName={s.icon} color={s.color} size={26} />
+                  <div className="w-full aspect-square rounded-xl overflow-hidden mb-3 shadow-sm group-hover:shadow-lg transition-all duration-300 relative" style={{ background: 'var(--mintLight)' }}>
+                    <img 
+                      src={s.image} 
+                      alt={s.label} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-3">
+                      <span className="text-white text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm border border-white/30" style={{ background: 'rgba(255,255,255,0.2)' }}>
+                        Book Now
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-sm font-bold text-ink">{s.label}</div>
-                  <div className="text-[11px] text-muted">{s.eta}</div>
+                  <span className="text-[15px] font-bold text-center transition-colors group-hover:text-[var(--mint)]" style={{ color: 'var(--ink)' }}>
+                    {s.label}
+                  </span>
+                  <span className="text-[12px] font-medium text-center mt-0.5" style={{ color: 'var(--muted)' }}>
+                    {s.eta}
+                  </span>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 bg-white border border-brd rounded-2xl text-muted text-sm">
-              No services matching "{search}" found. Try another search.
+            <div className="text-center py-16">
+              <Icons.SearchX size={48} className="mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-bold text-gray-600">No services found for "{search}"</h3>
+              <p className="text-sm text-gray-400 mt-2">Try adjusting your search terms.</p>
             </div>
           )}
         </div>
-      ) : (
-        /* PERSONALIZED HOME SECTIONS */
-        <>
-          {/* Section: Suggestions for You */}
-          <div className="suggestions-section mb-8">
-            <h2 style={{ fontSize: '18px', fontWeight: 700, color: B.ink, marginBottom: '14px', textAlign: 'left' }}>Suggestions For You</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {SUGGESTIONS.map(item => {
-                const targetService = SERVICES.find(s => s.id === item.id);
+
+        {!search && (
+          <>
+            {/* Value Proposition / Stats */}
+            <div className="sections-animate grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 mt-8">
+              {STATS.map((s, idx) => {
+                const IconComponent = Icons[s.icon] || Icons.CheckCircle;
                 return (
-                  <div 
-                    key={item.id} 
-                    className="card" 
-                    style={{ 
-                      padding: '20px', 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'flex-start', 
-                      textAlign: 'left',
-                      position: 'relative',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    {/* Badge */}
-                    <div style={{ position: 'absolute', top: '16px', right: '16px', background: `${item.color}15`, color: item.color, fontSize: '10px', fontWeight: 700, padding: '4px 8px', borderRadius: '6px' }}>
-                      {item.badge}
+                  <div key={idx} className="rounded-xl p-5 flex flex-col items-center justify-center shadow-sm border text-center" style={{ background: 'var(--surface)', borderColor: 'var(--brd)' }}>
+                    <div className="w-12 h-12 rounded-full mb-3 flex items-center justify-center" style={{ backgroundColor: 'var(--mintLight)', color: 'var(--mint)' }}>
+                      <IconComponent size={24} strokeWidth={2.5} />
                     </div>
-
-                    {/* Icon */}
-                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: `${item.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
-                      <ServiceIcon iconName={item.icon} color={item.color} size={20} />
-                    </div>
-
-                    <h3 style={{ fontSize: '15px', fontWeight: 700, color: B.ink, marginBottom: '6px' }}>{item.title}</h3>
-                    <p style={{ fontSize: '11px', color: B.muted, lineHeight: '1.5', flex: 1, marginBottom: '16px' }}>{item.desc}</p>
-                    
-                    <button 
-                      onClick={() => targetService && onBook(targetService)}
-                      className="pbtn outline"
-                      style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '12px', width: '100%' }}
-                    >
-                      {item.actionText} →
-                    </button>
+                    <span className="text-xl font-extrabold" style={{ color: 'var(--ink)' }}>{s.val}</span>
+                    <span className="text-xs font-semibold uppercase tracking-wider mt-1" style={{ color: 'var(--muted)' }}>{s.label}</span>
                   </div>
                 );
               })}
             </div>
-          </div>
 
-          {/* Section: Recent Bookings */}
-          <div className="recent-section mb-8">
-            <h2 style={{ fontSize: '18px', fontWeight: 700, color: B.ink, marginBottom: '14px', textAlign: 'left' }}>Recent Bookings</h2>
-            {bookingHistory.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {bookingHistory.slice(0, 3).map(bk => {
-                  const s = SERVICES.find(srv => srv.id === bk.serviceId) || SERVICES.find(srv => srv.label === bk.service);
+            {/* Premium Suggestions */}
+            <div className="sections-animate mb-10">
+              <h2 className="text-xl sm:text-2xl font-extrabold mb-6" style={{ color: 'var(--ink)' }}>Curated For You</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+                {SUGGESTIONS.map(item => {
+                  const targetService = SERVICES.find(s => s.id === item.id);
+                  if (!targetService) return null;
+                  
                   return (
                     <div 
-                      key={bk.id} 
-                      className="booking-row" 
-                      style={{ 
-                        justifyContent: 'space-between', 
-                        padding: '16px 20px', 
-                        background: '#fff' 
-                      }}
+                      key={item.id} 
+                      className="rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 border flex flex-col"
+                      style={{ background: 'var(--surface)', borderColor: 'var(--brd)' }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'left' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: `${s?.color || B.mint}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <ServiceIcon iconName={s?.icon || "Wrench"} color={s?.color || B.mint} size={20} />
-                        </div>
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontWeight: 700, fontSize: '14px', color: B.ink }}>{bk.service}</span>
-                            <span style={{ fontSize: '10px', background: B.bg, color: B.muted, padding: '2px 6px', borderRadius: '4px' }}>{bk.id}</span>
-                          </div>
-                          <div style={{ fontSize: '11px', color: B.muted, marginTop: '2px' }}>
-                            {bk.date} · Partner: {bk.worker || "Assigned Partner"}
-                          </div>
+                      <div className="h-40 w-full relative overflow-hidden" style={{ background: 'var(--mintLight)' }}>
+                        <img src={targetService.image} alt={item.title} className="w-full h-full object-cover" />
+                        <div className="absolute top-3 right-3 text-[11px] font-bold px-3 py-1 rounded-full shadow-sm" style={{ backgroundColor: 'var(--ink)', color: 'var(--surface)' }}>
+                          {item.badge}
                         </div>
                       </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontWeight: 700, fontSize: '14px', color: B.mint }}>{bk.amount}</div>
-                          <div style={{ fontSize: '10px', color: B.muted }}>Paid via {bk.paymentMethod || "UPI"}</div>
-                        </div>
+                      <div className="p-5 flex flex-col flex-1">
+                        <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--ink)' }}>{item.title}</h3>
+                        <p className="text-sm leading-relaxed mb-6 flex-1" style={{ color: 'var(--muted)' }}>{item.desc}</p>
                         <button 
-                          onClick={() => s && onBook(s)}
-                          className="pbtn" 
-                          style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '12px' }}
+                          onClick={() => onBook(targetService)}
+                          className="w-full py-3 rounded-xl font-bold text-white transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                          style={{ backgroundColor: 'var(--mint)' }}
                         >
-                          Rebook
+                          {item.actionText} <Icons.ArrowRight size={16} />
                         </button>
                       </div>
                     </div>
                   );
                 })}
               </div>
-            ) : (
-              <div className="card text-center" style={{ padding: '32px 20px' }}>
-                <span style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}>📋</span>
-                <h3 style={{ fontSize: '14px', fontWeight: 700, color: B.ink }}>No past bookings found</h3>
-                <p style={{ fontSize: '11px', color: B.muted, marginTop: '4px' }}>Your completed and re-booked services will appear here.</p>
-              </div>
-            )}
-          </div>
+            </div>
 
-          {/* Section: Explore All Services */}
-          <div className="mb-8">
-            <h2 className="category-grid-title text-[18px] font-bold text-ink mb-4 text-left">Explore Categories</h2>
-            <div className="grid grid-cols-3 gap-4">
-              {SERVICES.map(s => (
-                <div
-                  key={s.id}
-                  onClick={() => onBook(s)}
-                  className="category-card animate-hover"
-                >
-                  <div
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center mb-1"
-                    style={{ backgroundColor: `${s.color}15`, border: `1.5px solid ${s.color}25` }}
-                  >
-                    <ServiceIcon iconName={s.icon} color={s.color} size={26} />
-                  </div>
-                  <div className="text-sm font-bold text-ink">{s.label}</div>
-                  <div className="text-[11px] text-muted">{s.eta}</div>
+            {/* Recent Bookings (Corporate Style) */}
+            <div className="sections-animate mb-10">
+              <h2 className="text-xl sm:text-2xl font-extrabold mb-6" style={{ color: 'var(--ink)' }}>Your Recent Activity</h2>
+              {bookingHistory.length > 0 ? (
+                <div className="rounded-2xl shadow-sm border overflow-hidden" style={{ background: 'var(--surface)', borderColor: 'var(--brd)' }}>
+                  {bookingHistory.slice(0, 3).map((bk, idx) => {
+                    const s = SERVICES.find(srv => srv.id === bk.serviceId) || SERVICES.find(srv => srv.label === bk.service);
+                    return (
+                      <div 
+                        key={bk.id} 
+                        className={`p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${idx !== 0 ? 'border-t' : ''}`}
+                        style={{ borderColor: 'var(--brd)' }}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0" style={{ background: 'var(--mintLight)' }}>
+                            {s?.image ? (
+                              <img src={s.image} alt={bk.service} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: 'var(--mintLight)', color: 'var(--mint)' }}>
+                                <Icons.CheckCircle size={24} />
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-3 mb-1">
+                              <span className="font-bold text-base" style={{ color: 'var(--ink)' }}>{bk.service}</span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider" style={{ color: 'var(--inkLight)', background: 'var(--bg)' }}>{bk.id}</span>
+                            </div>
+                            <div className="text-[13px] font-medium" style={{ color: 'var(--muted)' }}>
+                              <Icons.Calendar size={12} className="inline mr-1 -mt-0.5" /> {bk.date} 
+                              <span className="mx-2" style={{ color: 'var(--brdMid)' }}>|</span> 
+                              <Icons.User size={12} className="inline mr-1 -mt-0.5" /> {bk.worker || "Assigned Partner"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between sm:justify-end gap-6 sm:w-auto w-full border-t sm:border-t-0 pt-4 sm:pt-0" style={{ borderColor: 'var(--brd)' }}>
+                          <div className="text-left sm:text-right">
+                            <div className="font-extrabold text-lg" style={{ color: 'var(--ink)' }}>{bk.amount}</div>
+                            <div className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--inkLight)' }}>Paid via {bk.paymentMethod || "UPI"}</div>
+                          </div>
+                          <button 
+                            onClick={() => s && onBook(s)}
+                            className="px-5 py-2.5 rounded-lg font-bold text-sm transition-colors border-2"
+                            style={{ borderColor: 'var(--mint)', color: 'var(--mint)' }}
+                            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'var(--mint)'; e.currentTarget.style.color = '#fff'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--mint)'; }}
+                          >
+                            Rebook
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              ) : (
+                <div className="rounded-2xl shadow-sm border p-12 text-center flex flex-col items-center justify-center" style={{ background: 'var(--surface)', borderColor: 'var(--brd)' }}>
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'var(--mintLight)' }}>
+                    <Icons.History size={28} style={{ color: 'var(--mint)' }} />
+                  </div>
+                  <h3 className="text-lg font-bold" style={{ color: 'var(--ink)' }}>No past bookings</h3>
+                  <p className="text-sm mt-2 max-w-sm" style={{ color: 'var(--muted)' }}>
+                    When you book your first premium service, it will appear here for easy rebooking.
+                  </p>
+                </div>
+              )}
             </div>
-          </div>
-        </>
-      )}
 
-      {/* Quick Stats Summary */}
-      <div className="stat-cards-container grid grid-cols-2 md:grid-cols-4 gap-4">
-        {STATS.map(s => (
-          <div key={s.label} className="stat-card bg-white border border-brd rounded-2xl p-5 flex flex-col items-center text-center">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', borderRadius: '50%', background: `${s.color}15`, marginBottom: '10px' }}>
-              <ServiceIcon iconName={s.icon} color={s.color} size={22} />
-            </div>
-            <span className="text-[20px] font-bold text-ink">{s.val}</span>
-            <span className="text-xs text-muted mt-1">{s.label}</span>
-          </div>
-        ))}
+          </>
+        )}
       </div>
     </div>
   );
