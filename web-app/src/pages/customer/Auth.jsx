@@ -6,7 +6,7 @@ import gsap from 'gsap';
 export default function Auth({ onLogin }) {
   const [step, setStep] = useState("phone");
   const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState(["","","",""]);
+  const [otp, setOtp] = useState(["","","","","",""]);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [cd, setCd] = useState(0);
@@ -25,27 +25,59 @@ export default function Auth({ onLogin }) {
     }
   }, [step]);
 
-  const sendOTP = () => {
+  const sendOTP = async () => {
     if (phone.length < 10) return;
     setLoading(true);
-    setTimeout(() => { setLoading(false); setStep("otp"); setCd(30); }, 1200);
+    try {
+      const res = await fetch("http://localhost:5000/auth/otp/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: `+91${phone}`, role: "customer" })
+      });
+      if (res.ok) {
+        setStep("otp"); 
+        setCd(30);
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to send OTP");
+      }
+    } catch (err) {
+      alert("Network error");
+    } finally {
+      setLoading(false);
+    }
   };
   
-  const handleOtp = (val, i) => {
+  const handleOtp = async (val, i) => {
     const d = val.replace(/\D/,"");
     const n = [...otp]; n[i] = d; setOtp(n);
-    if (d && i < 3) refs.current[i+1]?.focus();
+    if (d && i < 5) refs.current[i+1]?.focus();
     if (n.every(v=>v)) { 
       setLoading(true); 
-      setTimeout(()=>{
-        setLoading(false);
-        // Simulate existing user if phone is exactly "9876543210"
-        if (phone === "9876543210") {
-          onLogin("Amit", phone, false);
+      const fullOtp = n.join("");
+      try {
+        const res = await fetch("http://localhost:5000/auth/otp/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: `+91${phone}`, otp: fullOtp, role: "customer" })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          if (data.user?.name) {
+            onLogin(data.user.name, data.user.phone.replace("+91", ""));
+          } else {
+            setStep("name");
+          }
         } else {
-          setStep("name");
+          alert(data.error || "Invalid OTP");
+          setOtp(["","","","","",""]);
+          refs.current[0]?.focus();
         }
-      },700); 
+      } catch (err) {
+        alert("Network error");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -105,7 +137,7 @@ export default function Auth({ onLogin }) {
               <div style={{ display:"flex", gap:14, justifyContent:"center", marginBottom:28 }}>
                 {otp.map((v,i)=>(
                   <input key={i} ref={el=>refs.current[i]=el} 
-                    style={{ width: 64, height: 64, background: 'var(--paper)', border: '1.5px solid var(--border-2)', borderRadius: 'var(--r-md)', textAlign: 'center', fontSize: 24, fontWeight: 700, color: 'var(--ink)', outline: 'none', transition: 'border-color .2s' }}
+                    style={{ width: 48, height: 56, background: 'var(--paper)', border: '1.5px solid var(--border-2)', borderRadius: 'var(--r-md)', textAlign: 'center', fontSize: 24, fontWeight: 700, color: 'var(--ink)', outline: 'none', transition: 'border-color .2s' }}
                     className="focus:border-mint"
                     maxLength={1} value={v}
                     onChange={e=>handleOtp(e.target.value,i)}
@@ -117,7 +149,7 @@ export default function Auth({ onLogin }) {
               <div style={{ textAlign:"center", marginBottom:24 }}>
                 {cd>0
                   ? <span style={{ color:'var(--muted)', fontSize:13 }}>Resend in {cd}s</span>
-                  : <button onClick={()=>{setCd(30);setOtp(["","","",""]);}}
+                  : <button onClick={()=>{setCd(30);setOtp(["","","","","",""]);sendOTP();}}
                       style={{ background:"none", border:"none", color:'var(--mint-deep)', fontSize:13, fontWeight:600, cursor:"pointer" }}>
                       Resend OTP
                     </button>}
