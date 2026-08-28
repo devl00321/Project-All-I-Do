@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from './pages/LandingPage';
+
 import CustomerApp from './pages/customer/CustomerApp';
 import AdminAuth from './pages/admin/AdminAuth';
 import AdminRegister from './pages/admin/AdminRegister';
@@ -17,11 +17,8 @@ function App() {
     <ThemeProvider>
       <BrowserRouter>
       <Routes>
-        {/* Landing Page */}
-        <Route path="/" element={<LandingPage />} />
-
-        {/* Customer Portal */}
-        <Route path="/book/*" element={<CustomerApp />} />
+        {/* Customer Portal as Landing Page */}
+        <Route path="/*" element={<CustomerApp />} />
         
         {/* Admin/Dealer Portal */}
         <Route path="/admin/login" element={<AdminAuth />} />

@@ -77,16 +77,22 @@ export default function Home({ onBook, onTab, hasActive, bookingHistory = [] }) 
         </div>
       )}
 
-      {/* Hero Section */}
-      <div 
-        className="relative w-full h-[380px] sm:h-[480px] flex flex-col justify-center items-center px-4"
-        style={{ 
-          backgroundImage: `url('/images/hero.png')`, 
-          backgroundSize: 'cover', 
-          backgroundPosition: 'center' 
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-[#242e47]/80 via-[#242e47]/50 to-[#242e47]/90"></div>
+      {/* Hero Section with Video Background */}
+      <div className="relative w-full h-[380px] sm:h-[480px] flex flex-col justify-center items-center px-4 overflow-hidden bg-[var(--ink)]">
+        {/* Background Video */}
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="absolute inset-0 w-full h-full object-cover z-0 opacity-70"
+        >
+          {/* REPLACE this src with your actual advertisement video, e.g., src="/videos/ad.mp4" */}
+          <source src="https://cdn.pixabay.com/vimeo/328940142/cleaning-22687.mp4?width=1280&hash=8e0638531cc2e374be2e0df4a78d2b9921e54911" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+
+        <div className="absolute inset-0 bg-gradient-to-b from-[#242e47]/80 via-[#242e47]/50 to-[#242e47]/90 z-0"></div>
         
         <div className="hero-content relative z-10 w-full max-w-3xl text-center mt-[-40px]">
           <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-lg">

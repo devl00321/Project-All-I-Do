@@ -1,0 +1,9 @@
+CRITICAL SYSTEM DIRECTIVE:
+
+Before you take ANY action, write any code, or plan any architecture, you MUST read the `brain.md` file located in the root of this repository.
+
+1. `brain.md` is the central memory and source of truth for the ALLIDO project.
+2. You must CONSTANTLY update `brain.md` as you work. Log your progress, document any roadblocks or errors you encounter (and how you solved them), and clean up unnecessary junk or outdated placeholders.
+3. Check `LOCKIN.md` to ensure you do not modify locked files.
+
+Failure to follow these instructions will cause catastrophic context loss.
